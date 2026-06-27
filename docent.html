@@ -59,7 +59,11 @@ select.filter:focus, input.filter:focus { border-color: #38bdf8; }
 .quiz-content { flex: 1; overflow-y: auto; padding: 20px 24px; }
 
 /* Vraag kaarten in lijst */
-.vraag-rij { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; }
+.vraag-rij { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; cursor: grab; user-select: none; transition: opacity .15s, border-color .15s; }
+.vraag-rij:hover { border-color: #475569; }
+.vraag-rij.drag-over { border-color: #38bdf8; background: #0c1f38; }
+.vraag-rij.dragging  { opacity: .35; }
+.drag-handle { color: #475569; font-size: 1.1em; flex-shrink: 0; padding-top: 1px; cursor: grab; }
 .vraag-rij-nr { color: #475569; font-size: .8em; flex-shrink: 0; padding-top: 2px; min-width: 22px; }
 .vraag-rij-body { flex: 1; min-width: 0; }
 .vraag-rij-tekst { font-size: .9em; color: #cbd5e1; margin-top: 4px; }
@@ -431,7 +435,11 @@ function renderVraagRij(quizId, vraagId, v, i) {
     extra = '<div style="margin-top:5px;font-size:.78em;color:#64748b;">' +
       v.items.map((it, idx) => `${idx+1}. ${it}`).join(' &nbsp;·&nbsp; ') + '</div>';
   }
-  return `<div class="vraag-rij">
+  return `<div class="vraag-rij" draggable="true"
+      data-vraag-id="${vraagId}" data-quiz-id="${quizId}"
+      ondblclick="vraagBewerkStart('${quizId}','${vraagId}')"
+      ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dragDrop(event)" ondragend="dragEnd(event)">
+    <div class="drag-handle" title="Slepen om te herordenen">⠿</div>
     <div class="vraag-rij-nr">${i+1}</div>
     <div class="vraag-rij-body">
       <div style="display:flex;align-items:center;gap:7px;">${badgeHTML(v.type)}</div>
@@ -439,8 +447,8 @@ function renderVraagRij(quizId, vraagId, v, i) {
       ${extra}
     </div>
     <div style="display:flex;gap:4px;flex-shrink:0;">
-      <button class="btn btn-grijs" style="padding:4px 8px;font-size:.78em;" onclick="vraagBewerkStart('${quizId}','${vraagId}')">✏</button>
-      <button class="btn btn-rood"  style="padding:4px 8px;font-size:.78em;" onclick="vraagVerwijderen('${quizId}','${vraagId}')">✕</button>
+      <button class="btn btn-grijs" style="padding:4px 8px;font-size:.78em;" onclick="event.stopPropagation();vraagBewerkStart('${quizId}','${vraagId}')">✏</button>
+      <button class="btn btn-rood"  style="padding:4px 8px;font-size:.78em;" onclick="event.stopPropagation();vraagVerwijderen('${quizId}','${vraagId}')">✕</button>
     </div>
   </div>`;
 }
@@ -1099,6 +1107,50 @@ window.importeerCSV = async function(event) {
   actieveQuizId = quizId;
   event.target.value = '';
   alert(`✅ Quiz "${quizNaam}" geïmporteerd met ${Object.keys(vragen).length} vragen!`);
+};
+
+// ── Drag-and-drop volgorde ──
+let dragSrcId = null;
+
+window.dragStart = function(e) {
+  dragSrcId = e.currentTarget.dataset.vraagId;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+};
+
+window.dragOver = function(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.vraag-rij').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+};
+
+window.dragEnd = function(e) {
+  document.querySelectorAll('.vraag-rij').forEach(el => {
+    el.classList.remove('dragging', 'drag-over');
+  });
+};
+
+window.dragDrop = async function(e) {
+  e.preventDefault();
+  const targetId = e.currentTarget.dataset.vraagId;
+  const quizId   = e.currentTarget.dataset.quizId;
+  if (!dragSrcId || dragSrcId === targetId) return;
+
+  const quiz   = alleQuizzes[quizId];
+  const vragen = quiz.vragen ? Object.entries(quiz.vragen) : [];
+
+  // Bepaal huidige volgorde en wissel posities
+  const srcIdx = vragen.findIndex(([id]) => id === dragSrcId);
+  const tgtIdx = vragen.findIndex(([id]) => id === targetId);
+  if (srcIdx === -1 || tgtIdx === -1) return;
+
+  vragen.splice(tgtIdx, 0, vragen.splice(srcIdx, 1)[0]);
+
+  // Sla nieuwe volgorde op: verwijder alle vragen en schrijf opnieuw in volgorde
+  const nieuweVragen = {};
+  vragen.forEach(([id, v]) => { nieuweVragen[id] = v; });
+  await set(ref(db, `quizzes/${quizId}/vragen`), nieuweVragen);
 };
 </script>
 </body>

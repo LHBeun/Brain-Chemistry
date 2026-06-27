@@ -54,9 +54,34 @@ input.groot:focus { border-color: #38bdf8; }
 .mc-knop:active { transform: scale(.97); }
 .mc-knop.A{background:#ef4444} .mc-knop.B{background:#f97316}
 .mc-knop.C{background:#22c55e;color:#0f172a} .mc-knop.D{background:#3b82f6}
+.mc-knop.E{background:#a855f7} .mc-knop.F{background:#ec4899}
 .mc-knop:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 .mc-knop.gekozen { outline: 4px solid white; }
 .mc-knop .letter { font-size: 1.1em; }
+
+/* mc-multi checkboxes */
+.mc-multi-lijst { display: flex; flex-direction: column; gap: 10px; }
+.mc-multi-item { display: flex; align-items: center; gap: 12px; background: #0f172a; border: 2px solid #334155; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: border-color .15s; }
+.mc-multi-item:hover { border-color: #38bdf8; }
+.mc-multi-item.gekozen { border-color: #38bdf8; background: #1e3a5f; }
+.mc-multi-item input[type=checkbox] { width: 18px; height: 18px; accent-color: #38bdf8; flex-shrink: 0; }
+.mc-multi-lbl { font-size: .97em; }
+
+/* matching dropdowns */
+.matching-lijst { display: flex; flex-direction: column; gap: 10px; }
+.matching-rij { display: flex; align-items: center; gap: 10px; background: #0f172a; border-radius: 10px; padding: 10px 14px; }
+.matching-term { flex: 1; font-weight: 600; }
+.matching-select { flex: 1; background: #1e293b; color: #e2e8f0; border: 2px solid #334155; border-radius: 8px; padding: 8px 10px; font-size: .93em; outline: none; }
+.matching-select:focus { border-color: #38bdf8; }
+
+/* sorteren */
+.sorteren-lijst { display: flex; flex-direction: column; gap: 8px; }
+.sorteren-item { display: flex; align-items: center; gap: 10px; background: #0f172a; border: 2px solid #334155; border-radius: 10px; padding: 11px 14px; }
+.sorteren-tekst { flex: 1; font-size: .97em; }
+.sorteren-knoppen { display: flex; flex-direction: column; gap: 4px; }
+.sorteren-btn { background: #334155; border: none; color: #e2e8f0; border-radius: 6px; width: 28px; height: 24px; cursor: pointer; font-size: .85em; display: flex; align-items: center; justify-content: center; }
+.sorteren-btn:hover { background: #475569; }
+.sorteren-btn:disabled { opacity: .3; cursor: not-allowed; }
 
 .open-input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 2px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 1em; outline: none; transition: border-color .15s; }
 .open-input:focus { border-color: #38bdf8; }
@@ -213,20 +238,54 @@ function luisterNaarSessie() {
   });
 }
 
+const KLEUREN = ['A','B','C','D','E','F'];
+const TYPE_LABELS = { mc:'Meerkeuze', 'mc-multi':'Meerkeuze (meerdere)', matching:'Koppelen', sorteren:'Sorteren', open:'Open vraag' };
+
 function toonVraag(v) {
-  document.getElementById('v-type-label').textContent = v.type === 'mc' ? 'Meerkeuze' : 'Open vraag';
+  document.getElementById('v-type-label').textContent = TYPE_LABELS[v.type] || v.type;
   document.getElementById('v-tekst').textContent = v.tekst;
 
   const invoerEl = document.getElementById('v-invoer');
+
   if (v.type === 'mc') {
-    const letters = ['A','B','C','D'];
     invoerEl.innerHTML = '<div class="mc-grid">' +
       (v.opties || []).map((opt, i) => {
-        const l = letters[i];
+        const l = KLEUREN[i];
         return `<button class="mc-knop ${l}" onclick="stuurMC('${l}')">
           <span class="letter">${l}</span>${opt}
         </button>`;
       }).join('') + '</div>';
+
+  } else if (v.type === 'mc-multi') {
+    invoerEl.innerHTML = `<div class="mc-multi-lijst">` +
+      (v.opties || []).map((opt, i) => {
+        const l = KLEUREN[i];
+        return `<label class="mc-multi-item" onclick="toggleMulti(this)">
+          <input type="checkbox" value="${l}" onclick="event.stopPropagation();toggleMulti(this.closest('.mc-multi-item'))">
+          <span class="mc-multi-lbl"><strong>${l}</strong> ${opt}</span>
+        </label>`;
+      }).join('') +
+      `</div><button class="grote-knop" style="margin-top:12px" onclick="stuurMulti()">Verstuur antwoord</button>`;
+
+  } else if (v.type === 'matching') {
+    const rechts = (v.paren || []).map(p => p.r).sort(() => Math.random() - 0.5);
+    invoerEl.innerHTML = `<div class="matching-lijst">` +
+      (v.paren || []).map((p, i) => `
+        <div class="matching-rij">
+          <div class="matching-term">${p.l}</div>
+          <select class="matching-select" id="match-${i}">
+            <option value="">-- kies --</option>
+            ${rechts.map(r => `<option value="${r}">${r}</option>`).join('')}
+          </select>
+        </div>`).join('') +
+      `</div><button class="grote-knop" style="margin-top:12px" onclick="stuurMatching(${JSON.stringify(JSON.stringify((v.paren||[]).map(p=>p.l)))})">Verstuur antwoord</button>`;
+
+  } else if (v.type === 'sorteren') {
+    // randomize items for display
+    const items = [...(v.items || [])].sort(() => Math.random() - 0.5);
+    window._sorteerItems = items;
+    renderSorteren(invoerEl);
+
   } else {
     invoerEl.innerHTML = `
       <textarea class="open-input" id="open-antwoord" rows="4" placeholder="Typ je antwoord hier…"></textarea>
@@ -235,12 +294,72 @@ function toonVraag(v) {
   toon('scherm-vraag');
 }
 
+function renderSorteren(container) {
+  const items = window._sorteerItems;
+  container = container || document.getElementById('v-invoer');
+  container.innerHTML = `<div class="sorteren-lijst">` +
+    items.map((item, i) => `
+      <div class="sorteren-item" id="si-${i}">
+        <div class="sorteren-knoppen">
+          <button class="sorteren-btn" onclick="verschuif(${i},-1)" ${i===0?'disabled':''}>▲</button>
+          <button class="sorteren-btn" onclick="verschuif(${i},1)" ${i===items.length-1?'disabled':''}>▼</button>
+        </div>
+        <div class="sorteren-tekst">${item}</div>
+      </div>`).join('') +
+    `</div><button class="grote-knop" style="margin-top:12px" onclick="stuurSorteren()">Verstuur antwoord</button>`;
+}
+
+window.verschuif = function(i, dir) {
+  const items = window._sorteerItems;
+  const j = i + dir;
+  if (j < 0 || j >= items.length) return;
+  [items[i], items[j]] = [items[j], items[i]];
+  renderSorteren();
+};
+
+window.toggleMulti = function(el) {
+  el.classList.toggle('gekozen');
+  el.querySelector('input').checked = el.classList.contains('gekozen');
+};
+
 window.stuurMC = function(letter) {
   if (heeftGeantwoord) return;
   heeftGeantwoord = true;
   document.querySelectorAll('.mc-knop').forEach(b => b.disabled = true);
   document.querySelector('.mc-knop.' + letter)?.classList.add('gekozen');
   stuurAntwoord(letter);
+  toonWachtOpResultaat();
+};
+
+window.stuurMulti = function() {
+  if (heeftGeantwoord) return;
+  const gekozen = [...document.querySelectorAll('.mc-multi-item.gekozen input')].map(el => el.value);
+  if (!gekozen.length) { alert('Selecteer minstens één antwoord.'); return; }
+  heeftGeantwoord = true;
+  stuurAntwoord(JSON.stringify(gekozen));
+  toonWachtOpResultaat();
+};
+
+window.stuurMatching = function(linksJSON) {
+  if (heeftGeantwoord) return;
+  const links = JSON.parse(linksJSON);
+  const antw = {};
+  let volledig = true;
+  links.forEach((term, i) => {
+    const val = document.getElementById('match-' + i)?.value;
+    if (!val) { volledig = false; }
+    antw[term] = val || '';
+  });
+  if (!volledig) { alert('Koppel alle termen aan een definitie.'); return; }
+  heeftGeantwoord = true;
+  stuurAntwoord(JSON.stringify(antw));
+  toonWachtOpResultaat();
+};
+
+window.stuurSorteren = function() {
+  if (heeftGeantwoord) return;
+  heeftGeantwoord = true;
+  stuurAntwoord(JSON.stringify(window._sorteerItems));
   toonWachtOpResultaat();
 };
 

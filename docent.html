@@ -23,18 +23,17 @@ header h1 { font-size: 1.25em; color: #38bdf8; }
 .filter-rij { display: flex; flex-direction: column; gap: 6px; }
 select.filter, input.filter { width: 100%; padding: 7px 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: .85em; outline: none; }
 select.filter:focus, input.filter:focus { border-color: #38bdf8; }
-
 .quiz-lijst { flex: 1; overflow-y: auto; padding: 8px; }
-.quiz-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; border: 1px solid transparent; transition: background .12s, border-color .12s; }
+.quiz-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; border: 1px solid transparent; transition: background .12s; }
 .quiz-item:hover { background: #0f172a; }
 .quiz-item.actief { background: #0c1f38; border-color: #38bdf8; }
-.quiz-naam { font-size: .92em; font-weight: 600; color: #e2e8f0; margin-bottom: 3px; }
+.quiz-naam { font-size: .92em; font-weight: 600; margin-bottom: 3px; }
 .quiz-meta { font-size: .76em; color: #64748b; display: flex; gap: 6px; flex-wrap: wrap; }
 .tag { background: #1e3a5f; color: #7dd3fc; padding: 2px 7px; border-radius: 10px; font-size: .75em; }
-.tag.groen { background: #14532d; color: #86efac; }
-.tag.paars { background: #3b0764; color: #d8b4fe; }
+.tag.g { background: #14532d; color: #86efac; }
+.tag.p { background: #3b0764; color: #d8b4fe; }
 .geen-quizzes { padding: 20px; text-align: center; color: #475569; font-size: .88em; }
-.sidebar-footer { padding: 12px; border-top: 1px solid #334155; }
+.sidebar-footer { padding: 12px; border-top: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; }
 
 .btn { cursor: pointer; border: none; border-radius: 6px; font-weight: 700; font-size: .88em; padding: 8px 14px; transition: opacity .15s; }
 .btn:hover { opacity: .85; }
@@ -51,6 +50,7 @@ select.filter:focus, input.filter:focus { border-color: #38bdf8; }
 .leeg-scherm { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #334155; }
 .leeg-scherm .icon { font-size: 3em; margin-bottom: 14px; }
 
+/* Quiz detail */
 .quiz-detail { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .quiz-detail-header { padding: 18px 24px; background: #1e293b; border-bottom: 1px solid #334155; flex-shrink: 0; }
 .quiz-detail-header h2 { font-size: 1.3em; margin-bottom: 6px; }
@@ -58,20 +58,24 @@ select.filter:focus, input.filter:focus { border-color: #38bdf8; }
 .quiz-acties { display: flex; gap: 8px; flex-wrap: wrap; }
 .quiz-content { flex: 1; overflow-y: auto; padding: 20px 24px; }
 
-.vraag-sectie-titel { font-size: .78em; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+/* Vraag kaarten in lijst */
 .vraag-rij { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; }
-.vraag-rij-nr { color: #475569; font-size: .8em; flex-shrink: 0; padding-top: 2px; min-width: 24px; }
+.vraag-rij-nr { color: #475569; font-size: .8em; flex-shrink: 0; padding-top: 2px; min-width: 22px; }
 .vraag-rij-body { flex: 1; min-width: 0; }
-.vraag-rij-tekst { font-size: .92em; color: #cbd5e1; }
-.vraag-rij-opties { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
-.optie-chip { font-size: .75em; padding: 2px 8px; border-radius: 10px; background: #334155; color: #94a3b8; }
+.vraag-rij-tekst { font-size: .9em; color: #cbd5e1; margin-top: 4px; }
+.optie-chip { font-size: .73em; padding: 2px 8px; border-radius: 10px; background: #334155; color: #94a3b8; }
 .optie-chip.juist { background: #14532d; color: #86efac; }
-.sleutel-chips { margin-top: 4px; display: flex; gap: 5px; flex-wrap: wrap; }
-.sleutel-chip { font-size: .72em; padding: 2px 7px; border-radius: 10px; background: #1a2e1a; color: #6ee7b7; border: 1px solid #22c55e44; }
-.mc-badge  { font-size: .72em; padding: 2px 7px; border-radius: 10px; background: #1e3a5f; color: #7dd3fc; }
-.open-badge{ font-size: .72em; padding: 2px 7px; border-radius: 10px; background: #3b0764; color: #d8b4fe; }
+.sleutel-chip { font-size: .73em; padding: 2px 7px; border-radius: 10px; background: #1a2e1a; color: #6ee7b7; border: 1px solid #22c55e44; }
+.type-badge { font-size: .72em; padding: 2px 7px; border-radius: 10px; }
+.badge-mc     { background: #1e3a5f; color: #7dd3fc; }
+.badge-mcm    { background: #1e3a5f; color: #38bdf8; }
+.badge-open   { background: #3b0764; color: #d8b4fe; }
+.badge-match  { background: #431407; color: #fdba74; }
+.badge-sort   { background: #14532d; color: #86efac; }
 
+/* Nieuwe vraag formulier */
 .nieuwe-vraag-form { background: #1e293b; border: 1px dashed #334155; border-radius: 8px; padding: 16px; margin-top: 12px; }
+.form-sectie-titel { font-size: .82em; color: #64748b; margin-bottom: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
 .form-rij { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 .form-rij.enkel { grid-template-columns: 1fr; }
 label.form-label { font-size: .8em; color: #64748b; display: block; margin-bottom: 4px; }
@@ -79,12 +83,14 @@ input.form-inp, textarea.form-inp, select.form-inp { width: 100%; padding: 7px 1
 textarea.form-inp { resize: vertical; font-family: sans-serif; }
 input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-color: #38bdf8; }
 
-.mc-opties-grid { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
-.mc-opt-rij { display: flex; gap: 6px; align-items: center; }
-.mc-letter { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .82em; flex-shrink: 0; }
-.mc-letter.A{background:#ef4444} .mc-letter.B{background:#f97316} .mc-letter.C{background:#22c55e;color:#0f172a} .mc-letter.D{background:#3b82f6}
-.juist-radio { cursor: pointer; width: 15px; height: 15px; flex-shrink: 0; accent-color: #22c55e; }
+.opt-rij, .match-rij, .item-rij { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+.opt-letter { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .82em; flex-shrink: 0; }
+.opt-letter.A{background:#ef4444} .opt-letter.B{background:#f97316} .opt-letter.C{background:#22c55e;color:#0f172a} .opt-letter.D{background:#3b82f6} .opt-letter.E{background:#a855f7} .opt-letter.F{background:#06b6d4}
+.juist-check { cursor: pointer; width: 15px; height: 15px; flex-shrink: 0; accent-color: #22c55e; }
+.item-nr { width: 20px; color: #64748b; font-size: .85em; text-align: center; flex-shrink: 0; }
+.match-pijl { color: #475569; flex-shrink: 0; }
 .form-acties { display: flex; gap: 8px; margin-top: 12px; }
+.add-btn { font-size: .82em; padding: 5px 10px; margin-top: 6px; }
 
 /* Sessie */
 .sessie-scherm { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -101,9 +107,16 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
 .actieve-vraag-kaart h3 { font-size: 1.2em; line-height: 1.4; margin-bottom: 18px; }
 .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .mc-blok { border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 8px; font-size: .9em; font-weight: 600; }
-.mc-blok.A{background:#7f1d1d} .mc-blok.B{background:#7c2d12} .mc-blok.C{background:#14532d} .mc-blok.D{background:#1e3a5f}
+.mc-blok.A{background:#7f1d1d} .mc-blok.B{background:#7c2d12} .mc-blok.C{background:#14532d} .mc-blok.D{background:#1e3a5f} .mc-blok.E{background:#3b0764} .mc-blok.F{background:#164e63}
 .mc-blok.juist { outline: 3px solid #22c55e; }
 .mc-blok .ltr { font-size: 1.1em; font-weight: 800; }
+.match-display { display: flex; flex-direction: column; gap: 8px; }
+.match-pair { display: flex; align-items: center; gap: 10px; font-size: .9em; }
+.match-pair .term { background: #334155; padding: 6px 12px; border-radius: 6px; }
+.match-pair .def  { background: #1e3a5f; padding: 6px 12px; border-radius: 6px; color: #7dd3fc; }
+.sort-display { display: flex; flex-direction: column; gap: 6px; }
+.sort-item-display { display: flex; align-items: center; gap: 10px; font-size: .9em; }
+.sort-nr { background: #334155; width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: .8em; font-weight: 700; flex-shrink: 0; }
 
 .stats-kaart { background: #1e293b; border-radius: 12px; padding: 18px; }
 .stats-kaart h4 { font-size: .78em; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin-bottom: 12px; }
@@ -118,16 +131,13 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
 .open-antw-item.goed { background: #14532d; }
 .open-antw-item.fout { background: #1e293b; border: 1px solid #334155; }
 .open-antw-naam { font-size: .75em; color: #64748b; margin-bottom: 2px; }
-.open-antw-correct { font-size: .9em; flex-shrink: 0; }
 .score-info { margin-top: 10px; font-size: .84em; }
-
 .deelnemers-info { background: #1e293b; border-radius: 10px; padding: 14px; }
 .deeln-getal { font-size: 2em; font-weight: 700; color: #38bdf8; }
 .deeln-lbl { font-size: .82em; color: #64748b; }
-
 .score-bord-mini { background: #1e293b; border-radius: 10px; padding: 14px; }
 .score-bord-mini h4 { font-size: .78em; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin-bottom: 10px; }
-.score-rij { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #1e293b; font-size: .85em; }
+.score-rij { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #0f172a; font-size: .85em; }
 .score-pos { width: 20px; color: #64748b; font-size: .78em; }
 .score-naam { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .score-punten { font-weight: 700; color: #38bdf8; }
@@ -169,7 +179,7 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
     <div class="quiz-lijst" id="quiz-lijst">
       <div class="geen-quizzes">Nog geen quizzes.<br>Maak er een aan!</div>
     </div>
-    <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:6px;">
+    <div class="sidebar-footer">
       <button class="btn btn-blauw btn-full" onclick="openNieuweQuizModal()">+ Nieuwe quiz</button>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-grijs" style="flex:1" onclick="document.getElementById('csv-import').click()">📂 Importeer CSV</button>
@@ -192,28 +202,16 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
   <div class="modal">
     <h3 id="modal-quiz-titel">Nieuwe quiz</h3>
     <div class="form-rij">
-      <div>
-        <label class="form-label">Naam</label>
-        <input class="form-inp" id="modal-naam" placeholder="Bijv. Zuren en Basen – herhaling">
-      </div>
-      <div>
-        <label class="form-label">Leerjaar</label>
-        <select class="form-inp" id="modal-leerjaar">
-          <option>3</option><option>4</option><option>5</option><option>6</option>
-        </select>
+      <div><label class="form-label">Naam</label><input class="form-inp" id="modal-naam" placeholder="Bijv. Zuren en Basen – herhaling"></div>
+      <div><label class="form-label">Leerjaar</label>
+        <select class="form-inp" id="modal-leerjaar"><option>3</option><option>4</option><option>5</option><option>6</option></select>
       </div>
     </div>
     <div class="form-rij">
-      <div>
-        <label class="form-label">Niveau</label>
-        <select class="form-inp" id="modal-niveau">
-          <option>MAVO</option><option>HAVO</option><option>VWO</option>
-        </select>
+      <div><label class="form-label">Niveau</label>
+        <select class="form-inp" id="modal-niveau"><option>MAVO</option><option>HAVO</option><option>VWO</option></select>
       </div>
-      <div>
-        <label class="form-label">Onderwerp</label>
-        <input class="form-inp" id="modal-onderwerp" placeholder="Bijv. Zuren en Basen">
-      </div>
+      <div><label class="form-label">Onderwerp</label><input class="form-inp" id="modal-onderwerp" placeholder="Bijv. Zuren en Basen"></div>
     </div>
     <div class="modal-acties">
       <button class="btn btn-grijs" onclick="sluitModal('modal-quiz')">Annuleren</button>
@@ -234,11 +232,15 @@ const firebaseConfig = {
   projectId: "brain-chemistry",
   storageBucket: "brain-chemistry.firebasestorage.app",
   messagingSenderId: "359983668951",
-  appId: "1:35998368951:web:8c3504c9d5734219a31a92"
+  appId: "1:359983668951:web:8c3504c9d5734219a31a92"
 };
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
+const LETTERS = ['A','B','C','D','E','F'];
+const KLEUR_MAP = { A:'#ef4444', B:'#f97316', C:'#22c55e', D:'#3b82f6', E:'#a855f7', F:'#06b6d4' };
+
+// ── State ──
 let alleQuizzes    = {};
 let actieveQuizId  = null;
 let sessieActief   = false;
@@ -246,7 +248,16 @@ let sessieVraagIdx = 0;
 let huidigeFase    = 'wachten';
 let huidigeSessieId = null;
 
-// ── Listeners ──────────────────────────────────────────────
+// Formulier state
+let nvState = {
+  type: 'mc',
+  opties: ['', '', ''],
+  correct: [],
+  paren: [{ l: '', r: '' }, { l: '', r: '' }],
+  items: ['', '', '']
+};
+
+// ── Firebase listeners ──
 onValue(ref(db, 'quizzes'), snap => {
   alleQuizzes = snap.exists() ? snap.val() : {};
   renderQuizLijst();
@@ -272,7 +283,7 @@ onValue(ref(db, 'scores'), snap => {
   toonScoresMini(snap.exists() ? snap.val() : {});
 });
 
-// ── Quiz lijst ─────────────────────────────────────────────
+// ── Quiz lijst ──
 function renderQuizLijst() {
   const leerjaar  = document.getElementById('filter-leerjaar').value;
   const niveau    = document.getElementById('filter-niveau').value;
@@ -287,18 +298,16 @@ function renderQuizLijst() {
   });
 
   if (!gefilterd.length) { el.innerHTML = '<div class="geen-quizzes">Geen quizzes gevonden.</div>'; return; }
-
   el.innerHTML = '';
   gefilterd.forEach(([id, q]) => {
     const n   = q.vragen ? Object.keys(q.vragen).length : 0;
     const div = document.createElement('div');
     div.className = 'quiz-item' + (id === actieveQuizId ? ' actief' : '');
-    div.innerHTML = `
-      <div class="quiz-naam">${q.naam}</div>
+    div.innerHTML = `<div class="quiz-naam">${q.naam}</div>
       <div class="quiz-meta">
         <span class="tag">Jaar ${q.leerjaar}</span>
-        <span class="tag groen">${q.niveau}</span>
-        <span class="tag paars">${q.onderwerp}</span>
+        <span class="tag g">${q.niveau}</span>
+        <span class="tag p">${q.onderwerp}</span>
         <span style="color:#475569">${n} vragen</span>
       </div>`;
     div.onclick = () => { actieveQuizId = id; renderQuizLijst(); toonQuizDetail(id); };
@@ -307,7 +316,7 @@ function renderQuizLijst() {
 }
 window.filterQuizzes = renderQuizLijst;
 
-// ── Quiz detail ────────────────────────────────────────────
+// ── Quiz detail ──
 function toonQuizDetail(quizId) {
   const q      = alleQuizzes[quizId];
   if (!q) return;
@@ -319,8 +328,8 @@ function toonQuizDetail(quizId) {
         <h2>${q.naam}</h2>
         <div class="quiz-detail-meta">
           <span class="tag">Jaar ${q.leerjaar}</span>
-          <span class="tag groen">${q.niveau}</span>
-          <span class="tag paars">${q.onderwerp}</span>
+          <span class="tag g">${q.niveau}</span>
+          <span class="tag p">${q.onderwerp}</span>
         </div>
         <div class="quiz-acties">
           <button class="btn btn-groen" onclick="startQuiz('${quizId}')">▶ Start quiz</button>
@@ -329,103 +338,197 @@ function toonQuizDetail(quizId) {
         </div>
       </div>
       <div class="quiz-content">
-        <div class="vraag-sectie-titel"><span>VRAGEN</span><span style="color:#475569">${vragen.length}</span></div>
+        <div style="font-size:.78em;text-transform:uppercase;letter-spacing:.07em;color:#64748b;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+          <span>VRAGEN</span><span style="color:#475569">${vragen.length}</span>
+        </div>
         <div id="vraag-lijst-detail">
           ${vragen.length === 0 ? '<p style="color:#475569;font-size:.88em;">Nog geen vragen. Voeg er een toe hieronder.</p>' : ''}
           ${vragen.map(([vid, v], i) => renderVraagRij(quizId, vid, v, i)).join('')}
         </div>
-        <div class="nieuwe-vraag-form">
-          <div style="font-size:.82em;color:#64748b;margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">+ Nieuwe vraag</div>
-          <div class="form-rij">
-            <div>
-              <label class="form-label">Type</label>
-              <select class="form-inp" id="nv-type" onchange="toggleNvType()">
-                <option value="mc">Meerkeuze (MC)</option>
-                <option value="open">Open vraag</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-rij enkel">
-            <div>
-              <label class="form-label">Vraag</label>
-              <textarea class="form-inp" id="nv-tekst" rows="2" placeholder="Typ je vraag…"></textarea>
-            </div>
-          </div>
-          <div id="nv-mc-veld">
-            <label class="form-label">Opties <span style="color:#475569">(vink juiste antwoord aan)</span></label>
-            <div class="mc-opties-grid">
-              ${['A','B','C','D'].map(l => `
-                <div class="mc-opt-rij">
-                  <div class="mc-letter ${l}">${l}</div>
-                  <input class="form-inp nv-opt" data-letter="${l}" placeholder="Optie ${l}${l==='D'?' (optioneel)':''}">
-                  <input type="radio" name="nv-juist" value="${l}" class="juist-radio" title="Juist antwoord">
-                </div>`).join('')}
-            </div>
-          </div>
-          <div id="nv-open-veld" style="display:none">
-            <label class="form-label">Goede antwoorden / sleutelwoorden <span style="color:#475569">(kommagescheiden — antwoord hoeft er maar één te bevatten)</span></label>
-            <input class="form-inp" id="nv-sleutelwoorden" placeholder="Bijv: oxidatie, oxideren, geoxideerd">
-          </div>
-          <div class="form-acties">
-            <button class="btn btn-blauw" onclick="vraagToevoegen('${quizId}')">+ Toevoegen</button>
-          </div>
-        </div>
+        ${renderNieuwVraagForm(quizId)}
       </div>
     </div>`;
+
+  // Init form state
+  nvState = { type: 'mc', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
+  renderNvVeld();
+}
+
+function badgeHTML(type) {
+  const map = { mc: ['MC', 'badge-mc'], 'mc-multi': ['MC multi', 'badge-mcm'], open: ['Open', 'badge-open'], matching: ['Koppelen', 'badge-match'], sorteren: ['Sorteren', 'badge-sort'] };
+  const [lbl, cls] = map[type] || [type, 'badge-mc'];
+  return `<span class="type-badge ${cls}">${lbl}</span>`;
 }
 
 function renderVraagRij(quizId, vraagId, v, i) {
-  const badge = v.type === 'mc' ? '<span class="mc-badge">MC</span>' : '<span class="open-badge">Open</span>';
   let extra = '';
-  if (v.type === 'mc' && v.opties) {
-    const letters = ['A','B','C','D'];
-    extra = '<div class="vraag-rij-opties">' +
+  if ((v.type === 'mc' || v.type === 'mc-multi') && v.opties) {
+    const juistArr = Array.isArray(v.juist) ? v.juist : [v.juist];
+    extra = '<div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap;">' +
       v.opties.map((o, idx) => {
-        const l = letters[idx];
-        return `<span class="optie-chip${v.juist===l?' juist':''}">${l}: ${o}</span>`;
+        const l = LETTERS[idx];
+        const isJuist = juistArr.includes(l);
+        return `<span class="optie-chip${isJuist?' juist':''}">${l}: ${o}</span>`;
       }).join('') + '</div>';
-  }
-  if (v.type === 'open' && v.sleutelwoorden) {
-    const kws = v.sleutelwoorden.split(',').map(k => k.trim()).filter(k => k);
-    extra = '<div class="sleutel-chips">' + kws.map(k => `<span class="sleutel-chip">🔑 ${k}</span>`).join('') + '</div>';
+  } else if (v.type === 'open' && v.sleutelwoorden) {
+    extra = '<div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap;">' +
+      v.sleutelwoorden.split(',').map(k => `<span class="sleutel-chip">🔑 ${k.trim()}</span>`).join('') + '</div>';
+  } else if (v.type === 'matching' && v.paren) {
+    extra = '<div style="margin-top:5px;font-size:.78em;color:#64748b;">' +
+      v.paren.map(p => `${p.l} → ${p.r}`).join(' &nbsp;|&nbsp; ') + '</div>';
+  } else if (v.type === 'sorteren' && v.items) {
+    extra = '<div style="margin-top:5px;font-size:.78em;color:#64748b;">' +
+      v.items.map((it, idx) => `${idx+1}. ${it}`).join(' &nbsp;·&nbsp; ') + '</div>';
   }
   return `<div class="vraag-rij">
     <div class="vraag-rij-nr">${i+1}</div>
     <div class="vraag-rij-body">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">${badge}</div>
+      <div style="display:flex;align-items:center;gap:7px;">${badgeHTML(v.type)}</div>
       <div class="vraag-rij-tekst">${v.tekst}</div>
       ${extra}
     </div>
-    <div style="display:flex;gap:6px;flex-shrink:0;">
-      <button class="btn btn-rood" style="padding:4px 8px;font-size:.78em;" onclick="vraagVerwijderen('${quizId}','${vraagId}')">✕</button>
+    <button class="btn btn-rood" style="padding:4px 8px;font-size:.78em;flex-shrink:0;" onclick="vraagVerwijderen('${quizId}','${vraagId}')">✕</button>
+  </div>`;
+}
+
+function renderNieuwVraagForm(quizId) {
+  return `<div class="nieuwe-vraag-form" id="nv-form">
+    <div class="form-sectie-titel">+ Nieuwe vraag</div>
+    <div class="form-rij">
+      <div>
+        <label class="form-label">Type</label>
+        <select class="form-inp" id="nv-type" onchange="nvTypeChange()">
+          <option value="mc">Meerkeuze (1 antwoord)</option>
+          <option value="mc-multi">Meerkeuze (meerdere antwoorden)</option>
+          <option value="matching">Koppelen</option>
+          <option value="sorteren">Sorteren</option>
+          <option value="open">Open vraag</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-rij enkel">
+      <div>
+        <label class="form-label">Vraag</label>
+        <textarea class="form-inp" id="nv-tekst" rows="2" placeholder="Typ je vraag…"></textarea>
+      </div>
+    </div>
+    <div id="nv-type-veld"></div>
+    <div class="form-acties">
+      <button class="btn btn-blauw" onclick="vraagToevoegen('${quizId}')">+ Toevoegen</button>
     </div>
   </div>`;
 }
 
-// ── Vraag formulier ────────────────────────────────────────
-window.toggleNvType = function() {
-  const type = document.getElementById('nv-type').value;
-  document.getElementById('nv-mc-veld').style.display   = type === 'mc'   ? '' : 'none';
-  document.getElementById('nv-open-veld').style.display = type === 'open' ? '' : 'none';
+// ── Formulier type-veld render ──
+window.nvTypeChange = function() {
+  nvState.type = document.getElementById('nv-type').value;
+  nvState.correct = [];
+  renderNvVeld();
 };
 
+function renderNvVeld() {
+  const el = document.getElementById('nv-type-veld');
+  if (!el) return;
+  const type = nvState.type;
+
+  if (type === 'mc' || type === 'mc-multi') {
+    const isMulti = type === 'mc-multi';
+    let html = `<label class="form-label">Opties <span style="color:#475569">(${isMulti ? 'vink alle juiste antwoorden aan' : 'vink het juiste antwoord aan'})</span></label>`;
+    nvState.opties.forEach((opt, i) => {
+      const l = LETTERS[i];
+      html += `<div class="opt-rij">
+        <div class="opt-letter ${l}">${l}</div>
+        <input class="form-inp" value="${opt.replace(/"/g,'&quot;')}" oninput="nvState.opties[${i}]=this.value" placeholder="Optie ${l}${l==='D'||l==='E'||l==='F'?' (optioneel)':''}">
+        <input type="${isMulti?'checkbox':'radio'}" name="nv-juist" value="${l}" class="juist-check"
+               ${nvState.correct.includes(l)?'checked':''}
+               onchange="nvToggleCorrect('${l}',this.checked,${isMulti})">
+        ${nvState.opties.length > 2 ? `<button class="btn btn-rood" style="padding:3px 7px;font-size:.78em;" onclick="nvVerwijderOptie(${i})">✕</button>` : ''}
+      </div>`;
+    });
+    if (nvState.opties.length < 6)
+      html += `<button class="btn btn-grijs add-btn" onclick="nvVoegOptieToE()">+ Optie toevoegen</button>`;
+    el.innerHTML = html;
+
+  } else if (type === 'matching') {
+    let html = `<label class="form-label">Koppels (links → rechts)</label>`;
+    nvState.paren.forEach((p, i) => {
+      html += `<div class="match-rij">
+        <input class="form-inp" value="${p.l.replace(/"/g,'&quot;')}" oninput="nvState.paren[${i}].l=this.value" placeholder="Term…">
+        <span class="match-pijl">→</span>
+        <input class="form-inp" value="${p.r.replace(/"/g,'&quot;')}" oninput="nvState.paren[${i}].r=this.value" placeholder="Definitie…">
+        ${nvState.paren.length > 2 ? `<button class="btn btn-rood" style="padding:3px 7px;font-size:.78em;" onclick="nvVerwijderPaar(${i})">✕</button>` : ''}
+      </div>`;
+    });
+    if (nvState.paren.length < 8)
+      html += `<button class="btn btn-grijs add-btn" onclick="nvVoegPaarToe()">+ Koppel toevoegen</button>`;
+    el.innerHTML = html;
+
+  } else if (type === 'sorteren') {
+    let html = `<label class="form-label">Items in de juiste volgorde</label>`;
+    nvState.items.forEach((item, i) => {
+      html += `<div class="item-rij">
+        <span class="item-nr">${i+1}</span>
+        <input class="form-inp" value="${item.replace(/"/g,'&quot;')}" oninput="nvState.items[${i}]=this.value" placeholder="Item ${i+1}…">
+        ${nvState.items.length > 2 ? `<button class="btn btn-rood" style="padding:3px 7px;font-size:.78em;" onclick="nvVerwijderItem(${i})">✕</button>` : ''}
+      </div>`;
+    });
+    if (nvState.items.length < 8)
+      html += `<button class="btn btn-grijs add-btn" onclick="nvVoegItemToe()">+ Item toevoegen</button>`;
+    el.innerHTML = html;
+
+  } else {
+    el.innerHTML = `<label class="form-label">Sleutelwoorden / goede antwoorden <span style="color:#475569">(kommagescheiden)</span></label>
+      <input class="form-inp" id="nv-sleutelwoorden" placeholder="Bijv: oxidatie, oxideren, geoxideerd">`;
+  }
+}
+
+// Optie beheer
+window.nvToggleCorrect = function(l, checked, isMulti) {
+  if (isMulti) { nvState.correct = checked ? [...nvState.correct, l] : nvState.correct.filter(c => c !== l); }
+  else         { nvState.correct = checked ? [l] : []; }
+};
+window.nvVoegOptieToE  = () => { nvState.opties.push(''); renderNvVeld(); };
+window.nvVerwijderOptie = i => {
+  nvState.opties.splice(i, 1);
+  nvState.correct = nvState.correct.filter(c => LETTERS.indexOf(c) < nvState.opties.length);
+  renderNvVeld();
+};
+window.nvVoegPaarToe    = () => { nvState.paren.push({ l: '', r: '' }); renderNvVeld(); };
+window.nvVerwijderPaar  = i => { nvState.paren.splice(i, 1); renderNvVeld(); };
+window.nvVoegItemToe    = () => { nvState.items.push(''); renderNvVeld(); };
+window.nvVerwijderItem  = i => { nvState.items.splice(i, 1); renderNvVeld(); };
+
+// ── Vraag toevoegen ──
 window.vraagToevoegen = async function(quizId) {
-  const type  = document.getElementById('nv-type').value;
+  const type  = nvState.type;
   const tekst = document.getElementById('nv-tekst').value.trim();
   if (!tekst) { alert('Voer een vraagtekst in.'); return; }
 
-  const quiz = alleQuizzes[quizId];
-  const tags = { leerjaar: quiz.leerjaar, niveau: quiz.niveau, onderwerp: quiz.onderwerp };
+  const quiz  = alleQuizzes[quizId];
+  const tags  = { leerjaar: quiz.leerjaar, niveau: quiz.niveau, onderwerp: quiz.onderwerp };
   const vraag = { type, tekst, tags, quizId, quizNaam: quiz.naam };
 
-  if (type === 'mc') {
-    const opties = [...document.querySelectorAll('.nv-opt')].map(i => i.value.trim()).filter(v => v);
+  if (type === 'mc' || type === 'mc-multi') {
+    const opties = nvState.opties.filter(o => o.trim());
     if (opties.length < 2) { alert('Voer minimaal 2 opties in.'); return; }
-    const juist = document.querySelector('input[name=nv-juist]:checked');
     vraag.opties = opties;
-    vraag.juist  = juist ? juist.value : null;
+    if (type === 'mc') {
+      vraag.juist = nvState.correct[0] || null;
+    } else {
+      const geldig = nvState.correct.filter(c => LETTERS.indexOf(c) < opties.length);
+      if (!geldig.length) { alert('Selecteer minimaal één goed antwoord.'); return; }
+      vraag.juist = geldig;
+    }
+  } else if (type === 'matching') {
+    const paren = nvState.paren.filter(p => p.l.trim() && p.r.trim());
+    if (paren.length < 2) { alert('Voer minimaal 2 koppels in.'); return; }
+    vraag.paren = paren;
+  } else if (type === 'sorteren') {
+    const items = nvState.items.filter(i => i.trim());
+    if (items.length < 2) { alert('Voer minimaal 2 items in.'); return; }
+    vraag.items = items;
   } else {
-    vraag.sleutelwoorden = document.getElementById('nv-sleutelwoorden').value.trim();
+    vraag.sleutelwoorden = document.getElementById('nv-sleutelwoorden')?.value.trim() || '';
   }
 
   const nieuwRef = push(ref(db, `quizzes/${quizId}/vragen`));
@@ -433,10 +536,8 @@ window.vraagToevoegen = async function(quizId) {
   await set(ref(db, `vragenbank/${nieuwRef.key}`), vraag);
 
   document.getElementById('nv-tekst').value = '';
-  document.querySelectorAll('.nv-opt').forEach(i => i.value = '');
-  document.querySelectorAll('input[name=nv-juist]').forEach(r => r.checked = false);
-  if (document.getElementById('nv-sleutelwoorden'))
-    document.getElementById('nv-sleutelwoorden').value = '';
+  nvState = { type, opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
+  renderNvVeld();
 };
 
 window.vraagVerwijderen = async function(quizId, vraagId) {
@@ -445,7 +546,7 @@ window.vraagVerwijderen = async function(quizId, vraagId) {
   await remove(ref(db, `vragenbank/${vraagId}`));
 };
 
-// ── Quiz beheer ────────────────────────────────────────────
+// ── Quiz beheer ──
 let bewerkQuizId = null;
 
 window.openNieuweQuizModal = function() {
@@ -460,9 +561,9 @@ window.openBewerkenModal = function(quizId) {
   const q = alleQuizzes[quizId];
   bewerkQuizId = quizId;
   document.getElementById('modal-quiz-titel').textContent = 'Quiz bewerken';
-  document.getElementById('modal-naam').value = q.naam;
-  document.getElementById('modal-leerjaar').value = q.leerjaar;
-  document.getElementById('modal-niveau').value = q.niveau;
+  document.getElementById('modal-naam').value      = q.naam;
+  document.getElementById('modal-leerjaar').value  = q.leerjaar;
+  document.getElementById('modal-niveau').value    = q.niveau;
   document.getElementById('modal-onderwerp').value = q.onderwerp;
   document.getElementById('modal-quiz').style.display = 'flex';
 };
@@ -486,17 +587,15 @@ window.slaQuizOp = async function() {
 window.verwijderQuiz = async function(quizId) {
   if (!confirm('Quiz en alle vragen verwijderen?')) return;
   const q = alleQuizzes[quizId];
-  if (q?.vragen) {
-    for (const vid of Object.keys(q.vragen)) await remove(ref(db, `vragenbank/${vid}`));
-  }
+  if (q?.vragen) for (const vid of Object.keys(q.vragen)) await remove(ref(db, `vragenbank/${vid}`));
   await remove(ref(db, `quizzes/${quizId}`));
   actieveQuizId = null;
   document.getElementById('main').innerHTML = `<div class="leeg-scherm"><div class="icon">📚</div><p>Selecteer een quiz of maak een nieuwe aan</p></div>`;
 };
 
-window.sluitModal = function(id) { document.getElementById(id).style.display = 'none'; };
+window.sluitModal = id => { document.getElementById(id).style.display = 'none'; };
 
-// ── Sessie starten ─────────────────────────────────────────
+// ── Sessie starten ──
 window.startQuiz = async function(quizId) {
   const quiz   = alleQuizzes[quizId];
   const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
@@ -510,7 +609,6 @@ window.startQuiz = async function(quizId) {
 
   await remove(ref(db, 'antwoorden'));
   await remove(ref(db, 'scores'));
-  // Sla quiz-meta op voor de eindexport
   await set(ref(db, `resultaten/${huidigeSessieId}/meta`), {
     quizNaam: quiz.naam, leerjaar: quiz.leerjaar,
     niveau: quiz.niveau, onderwerp: quiz.onderwerp,
@@ -520,30 +618,41 @@ window.startQuiz = async function(quizId) {
     actief: true, quizId, quizNaam: quiz.naam,
     vraagIdx: 0, vraag: vragen[0], fase: 'vraag'
   });
-
   toonSessieScherm(quizId, 0);
 };
 
-// ── Sessie scherm ──────────────────────────────────────────
+// ── Sessie scherm ──
+function vraagDisplayHTML(v, toonJuist) {
+  if (v.type === 'mc' || v.type === 'mc-multi') {
+    const juistArr = Array.isArray(v.juist) ? v.juist : [v.juist];
+    return '<div class="mc-grid">' +
+      (v.opties || []).map((o, i) => {
+        const l = LETTERS[i];
+        const isJuist = toonJuist && juistArr.includes(l);
+        return `<div class="mc-blok ${l}${isJuist?' juist':''}"><span class="ltr">${l}</span>${o}</div>`;
+      }).join('') + '</div>';
+  } else if (v.type === 'matching') {
+    return '<div class="match-display">' +
+      (v.paren || []).map(p => `<div class="match-pair"><span class="term">${p.l}</span><span style="color:#475569">→</span><span class="def">${p.r}</span></div>`).join('') +
+      '</div>';
+  } else if (v.type === 'sorteren') {
+    return '<div class="sort-display">' +
+      (v.items || []).map((it, i) => `<div class="sort-item-display"><span class="sort-nr">${i+1}</span>${it}</div>`).join('') +
+      '</div>';
+  } else if (v.type === 'open' && v.sleutelwoorden && toonJuist) {
+    const kws = v.sleutelwoorden.split(',').map(k => k.trim()).filter(k => k);
+    return '<div style="display:flex;gap:6px;flex-wrap:wrap;">' + kws.map(k => `<span class="sleutel-chip">🔑 ${k}</span>`).join('') + '</div>';
+  }
+  return '';
+}
+
+const TYPE_LABELS = { mc: 'Meerkeuze', 'mc-multi': 'Meerkeuze (meerdere)', matching: 'Koppelen', sorteren: 'Sorteren', open: 'Open vraag' };
+
 function toonSessieScherm(quizId, idx) {
   const quiz   = alleQuizzes[quizId];
   const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
   const v      = vragen[idx];
   const totaal = vragen.length;
-
-  let vraagHTML = '';
-  if (v.type === 'mc') {
-    const letters = ['A','B','C','D'];
-    vraagHTML = '<div class="mc-grid">' +
-      v.opties.map((o, i) => {
-        const l = letters[i];
-        return `<div class="mc-blok ${l}${v.juist===l?' juist':''}"><span class="ltr">${l}</span>${o}</div>`;
-      }).join('') + '</div>';
-  } else if (v.sleutelwoorden) {
-    const kws = v.sleutelwoorden.split(',').map(k => k.trim()).filter(k => k);
-    vraagHTML = '<div class="sleutel-chips" style="margin-top:0">' + kws.map(k => `<span class="sleutel-chip">🔑 ${k}</span>`).join('') + '</div>';
-  }
-
   const isLaatste = idx + 1 >= totaal;
 
   document.getElementById('main').innerHTML = `
@@ -552,28 +661,28 @@ function toonSessieScherm(quizId, idx) {
         <h2>🎓 ${quiz.naam}</h2>
         <span class="voortgang">Vraag ${idx+1} / ${totaal}</span>
         <div class="sessie-knoppen">
-          <button class="btn btn-paars" id="btn-toon-resultaten" onclick="toonResultaten('${quizId}',${idx})">📊 Toon resultaten</button>
+          <button class="btn btn-paars" id="btn-toon" onclick="toonResultaten('${quizId}',${idx})">📊 Toon resultaten</button>
           ${isLaatste
-            ? `<button class="btn btn-oranje" id="btn-volgende" onclick="eindeQuiz('${quizId}')" disabled>✓ Afronden</button>`
-            : `<button class="btn btn-blauw"  id="btn-volgende" onclick="volgendeVraag('${quizId}',${idx+1})" disabled>Volgende →</button>`}
+            ? `<button class="btn btn-oranje" id="btn-next" onclick="eindeQuiz('${quizId}')" disabled>✓ Afronden</button>`
+            : `<button class="btn btn-blauw"  id="btn-next" onclick="volgendeVraag('${quizId}',${idx+1})" disabled>Volgende →</button>`}
           <button class="btn btn-rood" onclick="stopSessie('${quizId}')">⏹ Stop</button>
         </div>
       </div>
       <div class="sessie-body">
         <div class="sessie-links">
           <div class="actieve-vraag-kaart">
-            <div class="type-lbl">${v.type === 'mc' ? 'Meerkeuze' : 'Open vraag'} · Vraag ${idx+1}/${totaal}</div>
+            <div class="type-lbl">${TYPE_LABELS[v.type] || v.type} · Vraag ${idx+1}/${totaal}</div>
             <h3>${v.tekst}</h3>
-            ${vraagHTML}
+            ${vraagDisplayHTML(v, false)}
           </div>
           <div class="stats-kaart">
             <h4>Antwoorden</h4>
-            <div id="sessie-stats"><em style="color:#475569;font-size:.85em">Wachten op antwoorden…</em></div>
+            <div id="sessie-stats"><em style="color:#475569;font-size:.85em">Wachten…</em></div>
           </div>
         </div>
         <div class="sessie-rechts">
           <div class="deelnemers-info">
-            <div class="deeln-getal" id="sessie-deeln-teller">0</div>
+            <div class="deeln-getal" id="sessie-deeln">0</div>
             <div class="deeln-lbl">leerlingen online</div>
           </div>
           <div class="score-bord-mini">
@@ -585,12 +694,12 @@ function toonSessieScherm(quizId, idx) {
     </div>`;
 
   onValue(ref(db, 'deelnemers'), snap => {
-    const el = document.getElementById('sessie-deeln-teller');
+    const el = document.getElementById('sessie-deeln');
     if (el) el.textContent = snap.exists() ? Object.keys(snap.val()).length : 0;
   });
 }
 
-// ── Resultaten tonen + nakijken ────────────────────────────
+// ── Resultaten tonen + nakijken ──
 window.toonResultaten = async function(quizId, idx) {
   const quiz   = alleQuizzes[quizId];
   const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
@@ -599,50 +708,56 @@ window.toonResultaten = async function(quizId, idx) {
   const snap = await get(ref(db, 'antwoorden'));
   const antwoorden = snap.exists() ? snap.val() : {};
 
-  // Nakijken en scores bijwerken
   for (const [leerlingId, a] of Object.entries(antwoorden)) {
     let correct = false;
-    if (vraag.type === 'mc') {
+    const type = vraag.type;
+    if (type === 'mc') {
       correct = a.antwoord === vraag.juist;
+    } else if (type === 'mc-multi') {
+      try {
+        const student = JSON.parse(a.antwoord || '[]').sort();
+        const juist   = (Array.isArray(vraag.juist) ? vraag.juist : [vraag.juist]).sort();
+        correct = JSON.stringify(student) === JSON.stringify(juist);
+      } catch { correct = false; }
+    } else if (type === 'matching') {
+      try {
+        const studentMap = JSON.parse(a.antwoord || '{}');
+        const juistMap   = {};
+        (vraag.paren || []).forEach(p => { juistMap[p.l] = p.r; });
+        correct = Object.entries(juistMap).every(([k, v]) => studentMap[k] === v);
+      } catch { correct = false; }
+    } else if (type === 'sorteren') {
+      try {
+        correct = JSON.stringify(JSON.parse(a.antwoord || '[]')) === JSON.stringify(vraag.items || []);
+      } catch { correct = false; }
     } else {
       const kws  = (vraag.sleutelwoorden || '').split(',').map(k => k.trim().toLowerCase()).filter(k => k);
-      const antw = a.antwoord.toLowerCase();
+      const antw = (a.antwoord || '').toLowerCase();
       correct = kws.length > 0 && kws.some(k => antw.includes(k));
     }
-    await update(ref(db, `antwoorden/${leerlingId}`), { correct });
 
+    await update(ref(db, `antwoorden/${leerlingId}`), { correct });
     const scoreSnap = await get(ref(db, `scores/${leerlingId}`));
     const oud = scoreSnap.exists() ? (scoreSnap.val().punten || 0) : 0;
     await set(ref(db, `scores/${leerlingId}`), { naam: a.naam, punten: correct ? oud + 1 : oud });
   }
 
-  // Sla antwoorden op in permanente resultatenopslag
   if (huidigeSessieId) {
-    const quiz = alleQuizzes[quizId];
-    const vragen2 = quiz.vragen ? Object.values(quiz.vragen) : [];
-    await set(ref(db, `resultaten/${huidigeSessieId}/vragen/${idx}`), {
-      tekst: vraag.tekst, type: vraag.type
-    });
+    await set(ref(db, `resultaten/${huidigeSessieId}/vragen/${idx}`), { tekst: vraag.tekst, type: vraag.type });
     for (const [leerlingId, a] of Object.entries(antwoorden)) {
-      const correct = antwoorden[leerlingId]?.correct ?? false;
       await set(ref(db, `resultaten/${huidigeSessieId}/antwoorden/${leerlingId}/vraag_${idx}`), {
-        naam: a.naam, antwoord: a.antwoord, correct
+        naam: a.naam, antwoord: a.antwoord, correct: antwoorden[leerlingId]?.correct ?? false
       });
     }
   }
 
-  // Fase bijwerken → scorebord en leerlingen zien resultaat
   await update(ref(db, 'sessie'), { fase: 'resultaten' });
   huidigeFase = 'resultaten';
-
-  // Volgende knop activeren
-  const btnVolgende = document.getElementById('btn-volgende');
-  if (btnVolgende) btnVolgende.disabled = false;
-  const btnToon = document.getElementById('btn-toon-resultaten');
-  if (btnToon) btnToon.disabled = true;
+  document.getElementById('btn-next')?.removeAttribute('disabled');
+  document.getElementById('btn-toon')?.setAttribute('disabled', true);
 };
 
-// ── Volgende vraag ─────────────────────────────────────────
+// ── Volgende vraag ──
 window.volgendeVraag = async function(quizId, idx) {
   const quiz   = alleQuizzes[quizId];
   const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
@@ -658,13 +773,11 @@ window.eindeQuiz = async function(quizId) {
   sessieActief = false;
   const sid = huidigeSessieId;
   toonQuizDetail(quizId);
-  // Toon exportknop onder de quizdetails
   const content = document.querySelector('.quiz-content');
   if (content && sid) {
     const div = document.createElement('div');
     div.style.cssText = 'margin-top:16px;padding:16px;background:#14532d;border-radius:10px;display:flex;align-items:center;gap:14px;';
-    div.innerHTML = `
-      <span style="font-size:1.5em">🎉</span>
+    div.innerHTML = `<span style="font-size:1.5em">🎉</span>
       <div style="flex:1"><div style="font-weight:700;margin-bottom:2px;">Quiz afgerond!</div><div style="font-size:.85em;color:#86efac;">Alle antwoorden zijn opgeslagen.</div></div>
       <button class="btn btn-groen" onclick="exporteerQuizResultaten('${sid}')">📥 Exporteer resultaten</button>`;
     content.prepend(div);
@@ -678,54 +791,63 @@ window.stopSessie = async function(quizId) {
   toonQuizDetail(quizId);
 };
 
-// ── Live stats weergave ────────────────────────────────────
+// ── Live stats ──
 function toonSessieStats(data, vraag) {
   const el = document.getElementById('sessie-stats');
   if (!el) return;
   const antwoorden = Object.values(data);
   if (!antwoorden.length) { el.innerHTML = '<em style="color:#475569;font-size:.85em">Wachten…</em>'; return; }
-
   const nagekeken = antwoorden.some(a => a.correct !== undefined);
 
-  if (vraag.type === 'mc') {
-    const tl = {}, letters = ['A','B','C','D'];
-    vraag.opties.forEach((_, i) => tl[letters[i]] = 0);
-    antwoorden.forEach(a => { if (tl[a.antwoord] !== undefined) tl[a.antwoord]++; });
-    const kleuren = { A:'#ef4444', B:'#f97316', C:'#22c55e', D:'#3b82f6' };
+  if (vraag.type === 'mc' || vraag.type === 'mc-multi') {
+    const tl = {};
+    (vraag.opties || []).forEach((_, i) => tl[LETTERS[i]] = 0);
+    antwoorden.forEach(a => {
+      const val = a.antwoord;
+      // mc-multi: antwoord is JSON array
+      try {
+        const arr = JSON.parse(val);
+        if (Array.isArray(arr)) arr.forEach(l => { if (tl[l] !== undefined) tl[l]++; });
+        else if (tl[val] !== undefined) tl[val]++;
+      } catch { if (tl[val] !== undefined) tl[val]++; }
+    });
     let html = '<div class="balk-wrap">';
-    vraag.opties.forEach((opt, i) => {
-      const l = letters[i], n = tl[l];
+    (vraag.opties || []).forEach((opt, i) => {
+      const l = LETTERS[i], n = tl[l] || 0;
       const pct = Math.round(n / antwoorden.length * 100);
       html += `<div class="balk-rij">
         <div class="balk-lbl">${l}: ${opt}</div>
-        <div class="balk-out"><div class="balk-in" style="width:${pct}%;background:${kleuren[l]}">${pct>10?pct+'%':''}</div></div>
+        <div class="balk-out"><div class="balk-in" style="width:${pct}%;background:${KLEUR_MAP[l]}">${pct>10?pct+'%':''}</div></div>
         <div class="balk-cnt">${n}</div>
       </div>`;
     });
     html += '</div>';
-    if (nagekeken && vraag.juist) {
-      const goedN = tl[vraag.juist] || 0;
+    if (nagekeken) {
+      const goedN = antwoorden.filter(a => a.correct).length;
       const pct   = Math.round(goedN / antwoorden.length * 100);
-      html += `<div class="score-info">✅ <strong style="color:#22c55e">${pct}%</strong> goed &nbsp;❌ <strong style="color:#ef4444">${100-pct}%</strong> fout</div>`;
+      html += `<div class="score-info">✅ <strong style="color:#22c55e">${pct}%</strong> goed · ❌ <strong style="color:#ef4444">${100-pct}%</strong> fout</div>`;
     }
     html += `<div style="margin-top:8px;font-size:.8em;color:#475569">Totaal: ${antwoorden.length}</div>`;
     el.innerHTML = html;
   } else {
+    // matching, sorteren, open: toon lijst met goed/fout
     let html = '<div class="open-antw-lijst">';
     antwoorden.forEach(a => {
       const cls   = nagekeken ? (a.correct ? 'goed' : 'fout') : '';
       const icoon = nagekeken ? (a.correct ? '✅' : '❌') : '💬';
-      html += `<div class="open-antw-item ${cls}">
-        <span class="open-antw-correct">${icoon}</span>
-        <div><div class="open-antw-naam">${a.naam||'Anoniem'}</div>${a.antwoord}</div>
+      let antwtekst = a.antwoord;
+      try { const p = JSON.parse(a.antwoord); antwtekst = Array.isArray(p) ? p.join(' → ') : JSON.stringify(p); } catch {}
+      html += `<div class="open-antw-item ${cls}"><span style="flex-shrink:0">${icoon}</span>
+        <div><div class="open-antw-naam">${a.naam||'Anoniem'}</div>${antwtekst}</div>
       </div>`;
     });
-    html += `</div><div style="margin-top:8px;font-size:.8em;color:#475569">Totaal: ${antwoorden.length}</div>`;
+    html += `</div>`;
     if (nagekeken) {
       const goedN = antwoorden.filter(a => a.correct).length;
       const pct   = Math.round(goedN / antwoorden.length * 100);
-      html += `<div class="score-info">✅ <strong style="color:#22c55e">${pct}%</strong> goed &nbsp;❌ <strong style="color:#ef4444">${100-pct}%</strong> fout</div>`;
+      html += `<div class="score-info">✅ <strong style="color:#22c55e">${pct}%</strong> goed · ❌ <strong style="color:#ef4444">${100-pct}%</strong> fout</div>`;
     }
+    html += `<div style="margin-top:8px;font-size:.8em;color:#475569">Totaal: ${antwoorden.length}</div>`;
     el.innerHTML = html;
   }
 }
@@ -738,13 +860,44 @@ function toonScoresMini(scores) {
   const medals = ['🥇','🥈','🥉'];
   el.innerHTML = gesorteerd.map((s, i) => `
     <div class="score-rij">
-      <div class="score-pos">${medals[i] || i+1}</div>
+      <div class="score-pos">${medals[i]||i+1}</div>
       <div class="score-naam">${s.naam}</div>
       <div class="score-punten">${s.punten}</div>
     </div>`).join('');
 }
 
-// ── Voorbeeldbestand ───────────────────────────────────────
+// ── Export ──
+window.exporteerQuizResultaten = async function(sessieId) {
+  const snap = await get(ref(db, `resultaten/${sessieId}`));
+  if (!snap.exists()) { alert('Geen resultaten gevonden.'); return; }
+  const data = snap.val();
+  const meta = data.meta || {};
+  const vragen = data.vragen || {};
+  const antwoorden = data.antwoorden || {};
+  const vraagIdxs = Object.keys(vragen).map(Number).sort((a,b)=>a-b);
+  const koppen = vraagIdxs.map(i => `"${vragen[i].tekst}","Goed/Fout"`).join(',');
+  let csv = `"Quiz","${meta.quizNaam||''}"\n"Leerjaar ${meta.leerjaar} · ${meta.niveau} · ${meta.onderwerp} · ${meta.datum}"\n\n"Naam",${koppen},"Totaal"\n`;
+  const leerlingen = {};
+  for (const [lid, vr] of Object.entries(antwoorden)) {
+    const naam = Object.values(vr)[0]?.naam || lid;
+    leerlingen[lid] = { naam, vragen: vr };
+  }
+  for (const [, l] of Object.entries(leerlingen)) {
+    let rij = `"${l.naam}"`, totaal = 0;
+    for (const i of vraagIdxs) {
+      const a = l.vragen[`vraag_${i}`];
+      rij += `,"${a ? a.antwoord : ''}","${a ? (a.correct ? 'Goed' : 'Fout') : ''}"`;
+      if (a?.correct) totaal++;
+    }
+    csv += rij + `,"${totaal}/${vraagIdxs.length}"\n`;
+  }
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  link.download = `${meta.quizNaam||'resultaten'}_${meta.datum||''}.csv`;
+  link.click();
+};
+
+// ── Import / Voorbeeld ──
 window.downloadVoorbeeldCSV = function() {
   const inhoud = [
     'naam,leerjaar,niveau,onderwerp',
@@ -752,78 +905,49 @@ window.downloadVoorbeeldCSV = function() {
     'type,vraag,optieA,optieB,optieC,optieD,juist,sleutelwoorden',
     'mc,"Wat is het pH van puur water?",5,6,7,8,C,',
     'mc,"Welk van deze stoffen is een sterk zuur?",Azijnzuur,Zoutzuur,Citroenzuur,Koolzuur,B,',
-    'mc,"Wat is de formule van water?",CO2,H2O,NaCl,O2,B,',
-    'open,"Wat verstaan we onder neutralisatie?",,,,,,"zuur en base, water en zout, neutralisatie"',
-    'open,"Geef een voorbeeld van een zwak zuur.",,,,,,"azijnzuur, citroenzuur, koolzuur"',
+    'open,"Wat verstaan we onder neutralisatie?",,,,,,"zuur en base, water en zout"',
   ].join('\n');
-
-  const blob = new Blob([inhoud], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
+  link.href = URL.createObjectURL(new Blob([inhoud], { type: 'text/csv;charset=utf-8;' }));
   link.download = 'voorbeeld_quiz.csv';
   link.click();
 };
 
-// ── Import CSV ─────────────────────────────────────────────
 window.importeerCSV = async function(event) {
   const file = event.target.files[0];
   if (!file) return;
-
-  const tekst = await file.text();
-  const regels = tekst.split('\n').map(r => r.trim()).filter(r => r);
-
-  // Eerste regel = header, tweede regel = quizinfo, rest = vragen
-  // Verwacht formaat header: naam,leerjaar,niveau,onderwerp
-  // Quizinfo regel: "Zuren en Basen",4,HAVO,Zuren en Basen
-  // Vraag header: type,vraag,optieA,optieB,optieC,optieD,juist,sleutelwoorden
-  // MC regel:  mc,"Wat is het pH van water?",6,7,8,9,C,
-  // Open regel: open,"Wat is oxidatie?",,,,,,"elektronen afstaan, oxideren"
-
+  const tekst   = await file.text();
+  const regels  = tekst.split('\n').map(r => r.trim()).filter(r => r);
   if (regels.length < 3) { alert('CSV heeft te weinig regels.'); return; }
 
-  function parseCsvRegel(regel) {
-    const result = [];
-    let huidig = '', inAanhalingstekens = false;
-    for (let i = 0; i < regel.length; i++) {
-      const c = regel[i];
-      if (c === '"') { inAanhalingstekens = !inAanhalingstekens; }
-      else if (c === ',' && !inAanhalingstekens) { result.push(huidig.trim()); huidig = ''; }
+  function parseCsv(regel) {
+    const result = []; let huidig = '', inQ = false;
+    for (const c of regel) {
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { result.push(huidig.trim()); huidig = ''; }
       else { huidig += c; }
     }
     result.push(huidig.trim());
     return result;
   }
 
-  const quizInfo  = parseCsvRegel(regels[1]);
+  const quizInfo  = parseCsv(regels[1]);
   const quizNaam  = quizInfo[0] || 'Geïmporteerde quiz';
   const leerjaar  = quizInfo[1] || '4';
   const niveau    = quizInfo[2] || 'HAVO';
   const onderwerp = quizInfo[3] || '';
 
-  // Vragen starten vanaf regel 4 (index 3), regel 3 is vraag-header
-  const vraagRegels = regels.slice(3);
-  if (!vraagRegels.length) { alert('Geen vragen gevonden in CSV.'); return; }
-
   const newRef = push(ref(db, 'quizzes'));
   const quizId = newRef.key;
   const vragen = {};
 
-  for (const regel of vraagRegels) {
-    if (!regel) continue;
-    const [type, vraagtekst, a, b, c, d, juist, sleutelwoorden] = parseCsvRegel(regel);
+  for (const regel of regels.slice(3)) {
+    const [type, vraagtekst, a, b, c, d, juist, sleutelwoorden] = parseCsv(regel);
     if (!type || !vraagtekst) continue;
-
     const tags  = { leerjaar, niveau, onderwerp };
     const vraag = { type, tekst: vraagtekst, tags, quizId, quizNaam };
-
-    if (type === 'mc') {
-      const opties = [a, b, c, d].filter(o => o);
-      vraag.opties = opties;
-      vraag.juist  = juist || null;
-    } else {
-      vraag.sleutelwoorden = sleutelwoorden || '';
-    }
-
+    if (type === 'mc') { vraag.opties = [a, b, c, d].filter(o => o); vraag.juist = juist || null; }
+    else               { vraag.sleutelwoorden = sleutelwoorden || ''; }
     const vid = push(ref(db, `quizzes/${quizId}/vragen`)).key;
     vragen[vid] = vraag;
     await set(ref(db, `vragenbank/${vid}`), vraag);
@@ -833,51 +957,6 @@ window.importeerCSV = async function(event) {
   actieveQuizId = quizId;
   event.target.value = '';
   alert(`✅ Quiz "${quizNaam}" geïmporteerd met ${Object.keys(vragen).length} vragen!`);
-};
-
-// ── Export ─────────────────────────────────────────────────
-window.exporteerQuizResultaten = async function(sessieId) {
-  const snap = await get(ref(db, `resultaten/${sessieId}`));
-  if (!snap.exists()) { alert('Geen resultaten gevonden.'); return; }
-  const data = snap.val();
-
-  const meta    = data.meta || {};
-  const vragen  = data.vragen || {};
-  const antwoorden = data.antwoorden || {};
-
-  const vraagIdxs  = Object.keys(vragen).map(Number).sort((a,b) => a-b);
-  const vraagKoppen = vraagIdxs.map(i => `"${vragen[i].tekst}","Goed/Fout"`).join(',');
-
-  let csv = `"Quiz","${meta.quizNaam || ''}"\n`;
-  csv += `"Leerjaar ${meta.leerjaar} · ${meta.niveau} · ${meta.onderwerp} · ${meta.datum}"\n\n`;
-  csv += `"Naam",${vraagKoppen},"Totaal"\n`;
-
-  // Verzamel alle leerlingnamen
-  const leerlingen = {};
-  for (const [lid, vragenObj] of Object.entries(antwoorden)) {
-    const naam = Object.values(vragenObj)[0]?.naam || lid;
-    leerlingen[lid] = { naam, vragen: vragenObj };
-  }
-
-  for (const [lid, l] of Object.entries(leerlingen)) {
-    let rij = `"${l.naam}"`;
-    let totaal = 0;
-    for (const i of vraagIdxs) {
-      const a = l.vragen[`vraag_${i}`];
-      const antw  = a ? `"${a.antwoord}"` : '""';
-      const juist = a ? (a.correct ? 'Goed' : 'Fout') : '';
-      rij += `,${antw},"${juist}"`;
-      if (a?.correct) totaal++;
-    }
-    rij += `,"${totaal}/${vraagIdxs.length}"`;
-    csv += rij + '\n';
-  }
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `${meta.quizNaam || 'resultaten'}_${meta.datum || ''}.csv`;
-  link.click();
 };
 </script>
 </body>

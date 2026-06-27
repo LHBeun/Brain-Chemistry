@@ -29,6 +29,7 @@ header h1 { font-size: 1.3em; color: #38bdf8; }
 .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .mc-blok { border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; font-size: 1em; font-weight: 600; }
 .mc-blok.A{background:#7f1d1d} .mc-blok.B{background:#7c2d12} .mc-blok.C{background:#14532d} .mc-blok.D{background:#1e3a5f}
+.mc-blok.E{background:#581c87} .mc-blok.F{background:#831843}
 .mc-blok.juist { outline: 3px solid #22c55e; }
 .mc-blok .ltr { font-size: 1.2em; font-weight: 800; }
 
@@ -164,16 +165,36 @@ function renderLinks() {
   document.getElementById('hdr-quiz-naam').textContent = s.quizNaam || '';
   document.getElementById('hdr-voortgang').textContent = `Vraag ${idx + 1}`;
 
+  const LETTERS = ['A','B','C','D','E','F'];
+  const KLEUREN_MC = { A:'#ef4444', B:'#f97316', C:'#22c55e', D:'#3b82f6', E:'#a855f7', F:'#ec4899' };
+  const TYPE_LABELS = { mc:'Meerkeuze', 'mc-multi':'Meerkeuze (meerdere)', matching:'Koppelen', sorteren:'Sorteren', open:'Open vraag' };
+
   // Vraagweergave
   let vraagHTML = '';
-  if (v.type === 'mc') {
-    const letters = ['A','B','C','D'];
+  if (v.type === 'mc' || v.type === 'mc-multi') {
     const toonJuist = fase === 'resultaten';
+    const juistArr = Array.isArray(v.juist) ? v.juist : [v.juist];
     vraagHTML = '<div class="mc-grid">' +
       (v.opties || []).map((o, i) => {
-        const l = letters[i];
-        return `<div class="mc-blok ${l}${toonJuist && v.juist===l?' juist':''}"><span class="ltr">${l}</span>${o}</div>`;
+        const l = LETTERS[i];
+        const isJuist = toonJuist && juistArr.includes(l);
+        return `<div class="mc-blok ${l}${isJuist?' juist':''}"><span class="ltr">${l}</span>${o}</div>`;
       }).join('') + '</div>';
+  } else if (v.type === 'matching' && fase === 'resultaten') {
+    vraagHTML = `<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">` +
+      (v.paren || []).map(p => `
+        <div style="display:flex;gap:10px;align-items:center;background:#14532d;border-radius:8px;padding:8px 14px;">
+          <span style="flex:1;font-weight:600;">${p.l}</span>
+          <span style="color:#86efac;">→</span>
+          <span style="flex:1;">${p.r}</span>
+        </div>`).join('') + `</div>`;
+  } else if (v.type === 'sorteren' && fase === 'resultaten') {
+    vraagHTML = `<div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">` +
+      (v.items || []).map((item, i) => `
+        <div style="display:flex;gap:10px;align-items:center;background:#1e3a5f;border-radius:8px;padding:8px 14px;">
+          <span style="color:#38bdf8;font-weight:700;width:24px;">${i+1}.</span>
+          <span>${item}</span>
+        </div>`).join('') + `</div>`;
   } else if (fase === 'resultaten' && v.sleutelwoorden) {
     const kws = v.sleutelwoorden.split(',').map(k => k.trim()).filter(k => k);
     vraagHTML = `<div style="margin-top:-8px;display:flex;gap:8px;flex-wrap:wrap;">
@@ -187,53 +208,51 @@ function renderLinks() {
     const nagekeken = antw.some(a => a.correct !== undefined);
     const goedN = nagekeken ? antw.filter(a => a.correct).length : null;
     const pct   = goedN !== null ? Math.round(goedN / antw.length * 100) : null;
+    const samenvattingHTML = pct !== null ? `
+      <div class="score-samenvatting" style="margin-top:12px;">
+        <div class="score-stat"><div class="getal groen">${pct}%</div><div class="label">goed</div></div>
+        <div class="score-stat"><div class="getal rood">${100-pct}%</div><div class="label">fout</div></div>
+        <div class="score-stat"><div class="getal" style="color:#94a3b8">${antw.length}</div><div class="label">antwoorden</div></div>
+      </div>` : '';
 
     if (v.type === 'mc') {
-      const tl = {}, letters = ['A','B','C','D'];
-      (v.opties || []).forEach((_, i) => tl[letters[i]] = 0);
+      const tl = {};
+      (v.opties || []).forEach((_, i) => tl[LETTERS[i]] = 0);
       antw.forEach(a => { if (tl[a.antwoord] !== undefined) tl[a.antwoord]++; });
-      const kleuren = { A:'#ef4444', B:'#f97316', C:'#22c55e', D:'#3b82f6' };
-
       resultatenHTML = `<div class="resultaten-kaart">
         <h3>Resultaten (${antw.length} antwoorden)</h3>
         <div class="balk-wrap">
           ${(v.opties || []).map((opt, i) => {
-            const l = letters[i], n = tl[l];
+            const l = LETTERS[i], n = tl[l] || 0;
             const p = Math.round(n / antw.length * 100);
             return `<div class="balk-rij">
               <div class="balk-lbl">${l}: ${opt}</div>
-              <div class="balk-out"><div class="balk-in" style="width:${p}%;background:${kleuren[l]}">${p>8?p+'%':''}</div></div>
+              <div class="balk-out"><div class="balk-in" style="width:${p}%;background:${KLEUREN_MC[l]}">${p>8?p+'%':''}</div></div>
               <div class="balk-cnt">${n}</div>
             </div>`;
           }).join('')}
-        </div>
-        ${pct !== null ? `
-        <div class="score-samenvatting">
-          <div class="score-stat"><div class="getal groen">${pct}%</div><div class="label">goed</div></div>
-          <div class="score-stat"><div class="getal rood">${100-pct}%</div><div class="label">fout</div></div>
-          <div class="score-stat"><div class="getal" style="color:#94a3b8">${antw.length}</div><div class="label">antwoorden</div></div>
-        </div>` : ''}
-      </div>`;
+        </div>${samenvattingHTML}</div>`;
     } else {
+      // mc-multi, matching, sorteren, open: toon per leerling goed/fout
       resultatenHTML = `<div class="resultaten-kaart">
         <h3>Antwoorden (${antw.length})</h3>
         <div class="open-antw-lijst">
           ${antw.map(a => {
-            const nagekeken = a.correct !== undefined;
-            const cls   = nagekeken ? (a.correct ? 'goed' : 'fout') : 'onbekend';
-            const icoon = nagekeken ? (a.correct ? '✅' : '❌') : '💬';
+            const nk    = a.correct !== undefined;
+            const cls   = nk ? (a.correct ? 'goed' : 'fout') : 'onbekend';
+            const icoon = nk ? (a.correct ? '✅' : '❌') : '💬';
+            let antwtekst = a.antwoord;
+            try {
+              const parsed = JSON.parse(a.antwoord);
+              if (Array.isArray(parsed)) antwtekst = parsed.join(' → ');
+              else if (typeof parsed === 'object') antwtekst = Object.entries(parsed).map(([k,vv])=>`${k} → ${vv}`).join(', ');
+            } catch(e) {}
             return `<div class="open-antw-item ${cls}">
               <span class="antw-icoon">${icoon}</span>
-              <div><div class="open-antw-naam">${a.naam||'Anoniem'}</div>${a.antwoord}</div>
+              <div><div class="open-antw-naam">${a.naam||'Anoniem'}</div>${antwtekst}</div>
             </div>`;
           }).join('')}
-        </div>
-        ${pct !== null ? `
-        <div class="score-samenvatting" style="margin-top:12px;">
-          <div class="score-stat"><div class="getal groen">${pct}%</div><div class="label">goed</div></div>
-          <div class="score-stat"><div class="getal rood">${100-pct}%</div><div class="label">fout</div></div>
-        </div>` : ''}
-      </div>`;
+        </div>${samenvattingHTML}</div>`;
     }
   } else if (fase === 'vraag') {
     resultatenHTML = `<div style="text-align:center;color:#475569;padding:20px;font-size:.9em;">
@@ -243,7 +262,7 @@ function renderLinks() {
 
   document.getElementById('links').innerHTML = `
     <div class="vraag-kaart">
-      <div class="type-lbl">${v.type === 'mc' ? 'Meerkeuze' : 'Open vraag'}</div>
+      <div class="type-lbl">${TYPE_LABELS[v.type] || v.type}</div>
       <h2>${v.tekst}</h2>
       ${vraagHTML}
     </div>

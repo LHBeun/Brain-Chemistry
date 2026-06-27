@@ -171,6 +171,8 @@ let mijnId   = '';
 let huidigVraagIdx = null;
 let heeftGeantwoord = false;
 let mijnPunten = 0;
+let mijnResultaten = [];   // { tekst, correct } per vraag
+let huidigeVraag   = null; // sla huidige vraag op voor feedback
 
 function toon(id) {
   ['scherm-inlog','scherm-wacht','scherm-vraag','scherm-feedback']
@@ -224,6 +226,7 @@ function luisterNaarSessie() {
         huidigVraagIdx  = v.idx;
         heeftGeantwoord = false;
       }
+      huidigeVraag = v;
       toonVraag(v);
     }
   });
@@ -389,6 +392,11 @@ function toonWachtOpResultaat() {
 }
 
 function toonFeedback(correct) {
+  // Sla resultaat op voor eindfeedback
+  if (huidigeVraag && !mijnResultaten.find(r => r.tekst === huidigeVraag.tekst)) {
+    mijnResultaten.push({ tekst: huidigeVraag.tekst, correct });
+  }
+
   const el = document.getElementById('scherm-feedback');
   if (correct) {
     el.innerHTML = `
@@ -417,11 +425,36 @@ function toonFeedback(correct) {
 }
 
 function toonEinde() {
+  const totaal  = mijnResultaten.length;
+  const goed    = mijnResultaten.filter(r => r.correct).length;
+  const pct     = totaal > 0 ? Math.round(goed / totaal * 100) : 0;
+
+  const motivatie = pct === 100 ? 'Perfect gescoord! Geweldig werk! 🌟'
+    : pct >= 80 ? 'Heel goed gedaan! Bijna alles goed! 💪'
+    : pct >= 60 ? 'Goed bezig! Nog even oefenen en je hebt het! 📚'
+    : pct >= 40 ? 'Aardig geprobeerd, er is nog ruimte voor verbetering. 🔍'
+    : 'Dit onderwerp verdient nog wat extra aandacht. Niet opgeven! 💡';
+
+  const vraagLijst = totaal > 0 ? `
+    <div style="margin-top:20px;text-align:left;">
+      <div style="font-size:.78em;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:10px;">Jouw resultaten per vraag</div>
+      ${mijnResultaten.map((r, i) => `
+        <div style="display:flex;gap:10px;align-items:flex-start;background:${r.correct ? '#14532d' : '#450a0a'};border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+          <span style="font-size:1em;flex-shrink:0;">${r.correct ? '✅' : '❌'}</span>
+          <div>
+            <div style="font-size:.72em;color:${r.correct ? '#86efac' : '#fca5a5'};margin-bottom:1px;">Vraag ${i + 1}</div>
+            <div style="font-size:.88em;color:#e2e8f0;">${r.tekst}</div>
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+
   document.getElementById('scherm-feedback').innerHTML = `
     <div class="einde-kaart">
       <h2>Quiz afgerond! 🎉</h2>
-      <div class="einde-score">${mijnPunten}</div>
-      <div class="einde-lbl">punten behaald</div>
+      <div class="einde-score">${goed}/${totaal}</div>
+      <div class="einde-lbl">${pct}% goed</div>
+      <div style="margin-top:14px;font-size:.95em;color:#7dd3fc;">${motivatie}</div>
+      ${vraagLijst}
     </div>`;
   toon('scherm-feedback');
 }

@@ -427,7 +427,7 @@ function renderVraagRij(quizId, vraagId, v, i) {
       }).join('') + '</div>';
   } else if (v.type === 'open' && v.sleutelwoorden) {
     extra = '<div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap;">' +
-      v.sleutelwoorden.split(',').map(k => `<span class="sleutel-chip">🔑 ${k.trim()}</span>`).join('') + '</div>';
+      v.sleutelwoorden.split(';').map(k => `<span class="sleutel-chip">🔑 ${k.trim()}</span>`).join('') + '</div>';
   } else if (v.type === 'matching' && v.paren) {
     extra = '<div style="margin-top:5px;font-size:.78em;color:#64748b;">' +
       v.paren.map(p => `${p.l} → ${p.r}`).join(' &nbsp;|&nbsp; ') + '</div>';
@@ -539,8 +539,8 @@ function renderNvVeld() {
     el.innerHTML = html;
 
   } else {
-    el.innerHTML = `<label class="form-label">Sleutelwoorden / goede antwoorden <span style="color:#475569">(kommagescheiden)</span></label>
-      <input class="form-inp" id="nv-sleutelwoorden" placeholder="Bijv: oxidatie, oxideren, geoxideerd">`;
+    el.innerHTML = `<label class="form-label">Sleutelwoorden / goede antwoorden <span style="color:#475569">(puntkommagescheiden)</span></label>
+      <input class="form-inp" id="nv-sleutelwoorden" placeholder="Bijv: oxidatie; oxideren; geoxideerd">`;
   }
 }
 
@@ -762,7 +762,7 @@ function vraagDisplayHTML(v, toonJuist) {
       (v.items || []).map((it, i) => `<div class="sort-item-display"><span class="sort-nr">${i+1}</span>${it}</div>`).join('') +
       '</div>';
   } else if (v.type === 'open' && v.sleutelwoorden && toonJuist) {
-    const kws = v.sleutelwoorden.split(',').map(k => k.trim()).filter(k => k);
+    const kws = v.sleutelwoorden.split(';').map(k => k.trim()).filter(k => k);
     return '<div style="display:flex;gap:6px;flex-wrap:wrap;">' + kws.map(k => `<span class="sleutel-chip">🔑 ${k}</span>`).join('') + '</div>';
   }
   return '';
@@ -853,7 +853,7 @@ window.toonResultaten = async function(quizId, idx) {
         correct = JSON.stringify(JSON.parse(a.antwoord || '[]')) === JSON.stringify(vraag.items || []);
       } catch { correct = false; }
     } else {
-      const kws  = (vraag.sleutelwoorden || '').split(',').map(k => k.trim().toLowerCase()).filter(k => k);
+      const kws  = (vraag.sleutelwoorden || '').split(';').map(k => k.trim().toLowerCase()).filter(k => k);
       const antw = (a.antwoord || '').toLowerCase();
       correct = kws.length > 0 && kws.some(k => antw.includes(k));
     }

@@ -246,7 +246,7 @@ function renderLinks() {
           <span>${item}</span>
         </div>`).join('') + `</div>`;
   } else if (fase === 'resultaten' && v.sleutelwoorden) {
-    const kws = v.sleutelwoorden.split(',').map(k => k.trim()).filter(k => k);
+    const kws = v.sleutelwoorden.split(';').map(k => k.trim()).filter(k => k);
     vraagHTML = `<div style="margin-top:-8px;display:flex;gap:8px;flex-wrap:wrap;">
       ${kws.map(k => `<span style="background:#14532d;color:#86efac;padding:4px 12px;border-radius:20px;font-size:.88em;">🔑 ${k}</span>`).join('')}
     </div>`;

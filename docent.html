@@ -147,7 +147,6 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
   <div class="hdr-right">
     <div class="verbonden-dot"></div>
     <span class="leerlingen-teller"><span id="deeln-teller">0</span> leerlingen online</span>
-    <button class="btn btn-grijs" onclick="exporteerData()" style="font-size:.8em;padding:6px 10px;">📥 Export CSV</button>
   </div>
 </header>
 
@@ -172,7 +171,10 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
     </div>
     <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:6px;">
       <button class="btn btn-blauw btn-full" onclick="openNieuweQuizModal()">+ Nieuwe quiz</button>
-      <button class="btn btn-grijs btn-full" onclick="document.getElementById('csv-import').click()">📂 Importeer quiz (CSV)</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-grijs" style="flex:1" onclick="document.getElementById('csv-import').click()">📂 Importeer CSV</button>
+        <button class="btn btn-grijs" onclick="downloadVoorbeeldCSV()" title="Download voorbeeldbestand">📋</button>
+      </div>
       <input type="file" id="csv-import" accept=".csv" style="display:none" onchange="importeerCSV(event)">
     </div>
   </div>
@@ -241,7 +243,8 @@ let alleQuizzes    = {};
 let actieveQuizId  = null;
 let sessieActief   = false;
 let sessieVraagIdx = 0;
-let huidigeFase    = 'wachten'; // 'vraag' | 'resultaten' | 'wachten'
+let huidigeFase    = 'wachten';
+let huidigeSessieId = null;
 
 // ── Listeners ──────────────────────────────────────────────
 onValue(ref(db, 'quizzes'), snap => {
@@ -499,13 +502,20 @@ window.startQuiz = async function(quizId) {
   const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
   if (!vragen.length) { alert('Geen vragen in deze quiz.'); return; }
 
-  actieveQuizId  = quizId;
-  sessieActief   = true;
-  sessieVraagIdx = 0;
-  huidigeFase    = 'vraag';
+  actieveQuizId   = quizId;
+  sessieActief    = true;
+  sessieVraagIdx  = 0;
+  huidigeFase     = 'vraag';
+  huidigeSessieId = 'sessie_' + Date.now();
 
   await remove(ref(db, 'antwoorden'));
   await remove(ref(db, 'scores'));
+  // Sla quiz-meta op voor de eindexport
+  await set(ref(db, `resultaten/${huidigeSessieId}/meta`), {
+    quizNaam: quiz.naam, leerjaar: quiz.leerjaar,
+    niveau: quiz.niveau, onderwerp: quiz.onderwerp,
+    datum: new Date().toLocaleDateString('nl-NL')
+  });
   await set(ref(db, 'sessie'), {
     actief: true, quizId, quizNaam: quiz.naam,
     vraagIdx: 0, vraag: vragen[0], fase: 'vraag'
@@ -606,6 +616,21 @@ window.toonResultaten = async function(quizId, idx) {
     await set(ref(db, `scores/${leerlingId}`), { naam: a.naam, punten: correct ? oud + 1 : oud });
   }
 
+  // Sla antwoorden op in permanente resultatenopslag
+  if (huidigeSessieId) {
+    const quiz = alleQuizzes[quizId];
+    const vragen2 = quiz.vragen ? Object.values(quiz.vragen) : [];
+    await set(ref(db, `resultaten/${huidigeSessieId}/vragen/${idx}`), {
+      tekst: vraag.tekst, type: vraag.type
+    });
+    for (const [leerlingId, a] of Object.entries(antwoorden)) {
+      const correct = antwoorden[leerlingId]?.correct ?? false;
+      await set(ref(db, `resultaten/${huidigeSessieId}/antwoorden/${leerlingId}/vraag_${idx}`), {
+        naam: a.naam, antwoord: a.antwoord, correct
+      });
+    }
+  }
+
   // Fase bijwerken → scorebord en leerlingen zien resultaat
   await update(ref(db, 'sessie'), { fase: 'resultaten' });
   huidigeFase = 'resultaten';
@@ -631,8 +656,19 @@ window.volgendeVraag = async function(quizId, idx) {
 window.eindeQuiz = async function(quizId) {
   await update(ref(db, 'sessie'), { actief: false, fase: 'einde' });
   sessieActief = false;
-  alert('Quiz afgerond! Bekijk het eindklassement op het scorebord.');
+  const sid = huidigeSessieId;
   toonQuizDetail(quizId);
+  // Toon exportknop onder de quizdetails
+  const content = document.querySelector('.quiz-content');
+  if (content && sid) {
+    const div = document.createElement('div');
+    div.style.cssText = 'margin-top:16px;padding:16px;background:#14532d;border-radius:10px;display:flex;align-items:center;gap:14px;';
+    div.innerHTML = `
+      <span style="font-size:1.5em">🎉</span>
+      <div style="flex:1"><div style="font-weight:700;margin-bottom:2px;">Quiz afgerond!</div><div style="font-size:.85em;color:#86efac;">Alle antwoorden zijn opgeslagen.</div></div>
+      <button class="btn btn-groen" onclick="exporteerQuizResultaten('${sid}')">📥 Exporteer resultaten</button>`;
+    content.prepend(div);
+  }
 };
 
 window.stopSessie = async function(quizId) {
@@ -708,6 +744,26 @@ function toonScoresMini(scores) {
     </div>`).join('');
 }
 
+// ── Voorbeeldbestand ───────────────────────────────────────
+window.downloadVoorbeeldCSV = function() {
+  const inhoud = [
+    'naam,leerjaar,niveau,onderwerp',
+    '"Zuren en Basen – herhaling",4,HAVO,Zuren en Basen',
+    'type,vraag,optieA,optieB,optieC,optieD,juist,sleutelwoorden',
+    'mc,"Wat is het pH van puur water?",5,6,7,8,C,',
+    'mc,"Welk van deze stoffen is een sterk zuur?",Azijnzuur,Zoutzuur,Citroenzuur,Koolzuur,B,',
+    'mc,"Wat is de formule van water?",CO2,H2O,NaCl,O2,B,',
+    'open,"Wat verstaan we onder neutralisatie?",,,,,,"zuur en base, water en zout, neutralisatie"',
+    'open,"Geef een voorbeeld van een zwak zuur.",,,,,,"azijnzuur, citroenzuur, koolzuur"',
+  ].join('\n');
+
+  const blob = new Blob([inhoud], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'voorbeeld_quiz.csv';
+  link.click();
+};
+
 // ── Import CSV ─────────────────────────────────────────────
 window.importeerCSV = async function(event) {
   const file = event.target.files[0];
@@ -780,19 +836,48 @@ window.importeerCSV = async function(event) {
 };
 
 // ── Export ─────────────────────────────────────────────────
-window.exporteerData = async function() {
-  const snap = await get(ref(db, 'antwoorden'));
-  const antw = snap.exists() ? Object.values(snap.val()) : [];
-  if (!antw.length) { alert('Geen antwoorden om te exporteren.'); return; }
-  let csv = 'Naam,Antwoord,Correct,Tijdstip\n';
-  antw.forEach(a => {
-    const t = a.tijdstip ? new Date(a.tijdstip).toLocaleTimeString('nl-NL') : '';
-    const c = a.correct === true ? 'Ja' : a.correct === false ? 'Nee' : '';
-    csv += `"${a.naam||''}","${a.antwoord}","${c}","${t}"\n`;
-  });
-  const blob = new Blob([csv], { type: 'text/csv' });
+window.exporteerQuizResultaten = async function(sessieId) {
+  const snap = await get(ref(db, `resultaten/${sessieId}`));
+  if (!snap.exists()) { alert('Geen resultaten gevonden.'); return; }
+  const data = snap.val();
+
+  const meta    = data.meta || {};
+  const vragen  = data.vragen || {};
+  const antwoorden = data.antwoorden || {};
+
+  const vraagIdxs  = Object.keys(vragen).map(Number).sort((a,b) => a-b);
+  const vraagKoppen = vraagIdxs.map(i => `"${vragen[i].tekst}","Goed/Fout"`).join(',');
+
+  let csv = `"Quiz","${meta.quizNaam || ''}"\n`;
+  csv += `"Leerjaar ${meta.leerjaar} · ${meta.niveau} · ${meta.onderwerp} · ${meta.datum}"\n\n`;
+  csv += `"Naam",${vraagKoppen},"Totaal"\n`;
+
+  // Verzamel alle leerlingnamen
+  const leerlingen = {};
+  for (const [lid, vragenObj] of Object.entries(antwoorden)) {
+    const naam = Object.values(vragenObj)[0]?.naam || lid;
+    leerlingen[lid] = { naam, vragen: vragenObj };
+  }
+
+  for (const [lid, l] of Object.entries(leerlingen)) {
+    let rij = `"${l.naam}"`;
+    let totaal = 0;
+    for (const i of vraagIdxs) {
+      const a = l.vragen[`vraag_${i}`];
+      const antw  = a ? `"${a.antwoord}"` : '""';
+      const juist = a ? (a.correct ? 'Goed' : 'Fout') : '';
+      rij += `,${antw},"${juist}"`;
+      if (a?.correct) totaal++;
+    }
+    rij += `,"${totaal}/${vraagIdxs.length}"`;
+    csv += rij + '\n';
+  }
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob); link.download = 'antwoorden.csv'; link.click();
+  link.href = URL.createObjectURL(blob);
+  link.download = `${meta.quizNaam || 'resultaten'}_${meta.datum || ''}.csv`;
+  link.click();
 };
 </script>
 </body>

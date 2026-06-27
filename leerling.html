@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brain Chemistry</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: sans-serif; margin: 0; background: #0f172a; color: #e2e8f0;
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  }
+  header {
+    width: 100%; background: #1e293b; padding: 14px 24px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 2px solid #334155;
+  }
+  header h1 { margin: 0; font-size: 1.2em; color: #38bdf8; }
+  .naam-badge { margin-left: auto; font-size: 0.85em; color: #94a3b8; }
+
+  .scherm { width: 100%; max-width: 560px; padding: 28px 20px; }
+
+  /* Inlogscherm */
+  .inlog-kaart {
+    background: #1e293b; border-radius: 16px; padding: 36px 32px;
+    text-align: center; margin-top: 40px;
+  }
+  .inlog-kaart h2 { margin: 0 0 6px; font-size: 1.5em; }
+  .inlog-kaart p  { color: #94a3b8; margin: 0 0 28px; }
+  .inlog-kaart input {
+    width: 100%; padding: 13px 16px; border-radius: 10px;
+    border: 2px solid #334155; background: #0f172a; color: #e2e8f0;
+    font-size: 1.1em; text-align: center; margin-bottom: 14px;
+    outline: none; transition: border-color 0.15s;
+  }
+  .inlog-kaart input:focus { border-color: #38bdf8; }
+
+  /* Wachtscherm */
+  .wacht-kaart {
+    background: #1e293b; border-radius: 16px; padding: 40px 28px;
+    text-align: center; margin-top: 40px;
+  }
+  .wacht-icoon { font-size: 3em; margin-bottom: 16px; animation: bounce 1.5s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .wacht-kaart h2 { margin: 0 0 8px; font-size: 1.3em; }
+  .wacht-kaart p  { color: #94a3b8; margin: 0; }
+
+  /* Vraagscherm */
+  .vraag-kaart { background: #1e293b; border-radius: 16px; padding: 28px 24px; margin-top: 24px; }
+  .vraag-type-label { font-size: 0.82em; color: #94a3b8; margin-bottom: 10px; }
+  .vraag-tekst { font-size: 1.25em; font-weight: 700; line-height: 1.4; margin-bottom: 24px; }
+
+  .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mc-knop {
+    border: none; border-radius: 12px; padding: 18px 14px;
+    font-size: 1em; font-weight: 700; color: white; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    transition: transform 0.1s, opacity 0.15s;
+    text-align: left;
+  }
+  .mc-knop:active { transform: scale(0.97); }
+  .mc-knop.A { background: #ef4444; }
+  .mc-knop.B { background: #f97316; }
+  .mc-knop.C { background: #22c55e; color: #0f172a; }
+  .mc-knop.D { background: #3b82f6; }
+  .mc-knop .letter { font-size: 1.2em; flex-shrink: 0; }
+  .mc-knop:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  .mc-knop.gekozen { outline: 4px solid white; }
+
+  .open-input { width: 100%; padding: 13px 16px; border-radius: 10px; border: 2px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 1em; outline: none; transition: border-color 0.15s; }
+  .open-input:focus { border-color: #38bdf8; }
+
+  /* Bevestigingsscherm */
+  .bevestiging-kaart {
+    background: #14532d; border-radius: 16px; padding: 40px 28px;
+    text-align: center; margin-top: 24px;
+  }
+  .bevestiging-kaart .check { font-size: 3em; margin-bottom: 12px; }
+  .bevestiging-kaart h2 { margin: 0 0 6px; }
+  .bevestiging-kaart p  { color: #86efac; margin: 0; }
+
+  /* Gedeeld */
+  button.grote-knop {
+    width: 100%; margin-top: 16px; padding: 14px; border: none; border-radius: 10px;
+    background: #38bdf8; color: #0f172a; font-size: 1.05em; font-weight: 700;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  button.grote-knop:hover { opacity: 0.88; }
+  button.grote-knop:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧪 Brain Chemistry</h1>
+  <span class="naam-badge" id="naam-badge"></span>
+</header>
+
+<!-- SCHERM 1: naam invoeren -->
+<div class="scherm" id="scherm-inlog">
+  <div class="inlog-kaart">
+    <h2>Welkom! 👋</h2>
+    <p>Voer je naam in om mee te doen</p>
+    <input type="text" id="naam-input" placeholder="Jouw naam" maxlength="30"
+           onkeydown="if(event.key==='Enter') deelnemen()">
+    <button class="grote-knop" onclick="deelnemen()">Deelnemen →</button>
+  </div>
+</div>
+
+<!-- SCHERM 2: wachten op vraag -->
+<div class="scherm" id="scherm-wacht" style="display:none">
+  <div class="wacht-kaart">
+    <div class="wacht-icoon">⏳</div>
+    <h2>Wachten op de docent…</h2>
+    <p>De volgende vraag verschijnt hier automatisch</p>
+  </div>
+</div>
+
+<!-- SCHERM 3: vraag beantwoorden -->
+<div class="scherm" id="scherm-vraag" style="display:none">
+  <div class="vraag-kaart">
+    <div class="vraag-type-label" id="v-type-label"></div>
+    <div class="vraag-tekst" id="v-tekst"></div>
+    <div id="v-invoer"></div>
+  </div>
+</div>
+
+<!-- SCHERM 4: antwoord verzonden -->
+<div class="scherm" id="scherm-bevestiging" style="display:none">
+  <div class="bevestiging-kaart">
+    <div class="check">✅</div>
+    <h2>Antwoord verzonden!</h2>
+    <p>Wacht op de volgende vraag van de docent</p>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, remove }
+    from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCmCeuVZr888XzPkfX5MrQ8xxZ96ttaIsQ",
+  authDomain: "brain-chemistry.firebaseapp.com",
+  databaseURL: "https://brain-chemistry-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "brain-chemistry",
+  storageBucket: "brain-chemistry.firebasestorage.app",
+  messagingSenderId: "359983668951",
+  appId: "1:359983668951:web:8c3504c9d5734219a31a92"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+let mijnNaam = '';
+let mijnId   = '';
+let huidigVraagIdx = null;
+let heeftGeantwoord = false;
+
+function toon(id) {
+  ['scherm-inlog','scherm-wacht','scherm-vraag','scherm-bevestiging']
+    .forEach(s => document.getElementById(s).style.display = s === id ? '' : 'none');
+}
+
+// ── Deelnemen ──
+window.deelnemen = function() {
+  const naam = document.getElementById('naam-input').value.trim();
+  if (!naam) { document.getElementById('naam-input').focus(); return; }
+  mijnNaam = naam;
+  mijnId   = 'l_' + Math.random().toString(36).slice(2, 9);
+
+  // Registreer aanwezigheid
+  set(ref(db, 'deelnemers/' + mijnId), { naam });
+
+  document.getElementById('naam-badge').textContent = naam;
+  toon('scherm-wacht');
+  luisterNaarSessie();
+};
+
+// ── Luister naar actieve vraag ──
+function luisterNaarSessie() {
+  onValue(ref(db, 'sessie'), snap => {
+    if (!snap.exists()) { toon('scherm-wacht'); return; }
+    const sessie = snap.val();
+
+    if (!sessie.actief) {
+      // Vraag gestopt — wacht op volgende
+      huidigVraagIdx = null;
+      heeftGeantwoord = false;
+      toon('scherm-wacht');
+      return;
+    }
+
+    const v = sessie.vraag;
+    if (v.idx === huidigVraagIdx && heeftGeantwoord) return; // al beantwoord
+
+    // Nieuwe vraag
+    if (v.idx !== huidigVraagIdx) {
+      huidigVraagIdx  = v.idx;
+      heeftGeantwoord = false;
+    }
+
+    toonVraag(v);
+  });
+}
+
+function toonVraag(v) {
+  document.getElementById('v-type-label').textContent = v.type === 'mc' ? 'Meerkeuze' : 'Open vraag';
+  document.getElementById('v-tekst').textContent = v.tekst;
+
+  const invoerEl = document.getElementById('v-invoer');
+
+  if (v.type === 'mc') {
+    const letters = ['A','B','C','D'];
+    invoerEl.innerHTML = '<div class="mc-grid">' +
+      v.opties.map((opt, i) => {
+        const l = letters[i];
+        return `<button class="mc-knop ${l}" onclick="stuurMC('${l}')">
+          <span class="letter">${l}</span>${opt}
+        </button>`;
+      }).join('') +
+    '</div>';
+  } else {
+    invoerEl.innerHTML = `
+      <textarea class="open-input" id="open-antwoord" rows="4" placeholder="Typ je antwoord hier…"></textarea>
+      <button class="grote-knop" onclick="stuurOpen()">Verstuur antwoord</button>`;
+  }
+
+  toon('scherm-vraag');
+}
+
+window.stuurMC = function(letter) {
+  if (heeftGeantwoord) return;
+  heeftGeantwoord = true;
+  document.querySelectorAll('.mc-knop').forEach(b => { b.disabled = true; });
+  document.querySelector('.mc-knop.' + letter).classList.add('gekozen');
+  stuurAntwoord(letter);
+  setTimeout(() => toon('scherm-bevestiging'), 600);
+};
+
+window.stuurOpen = function() {
+  if (heeftGeantwoord) return;
+  const tekst = document.getElementById('open-antwoord').value.trim();
+  if (!tekst) return;
+  heeftGeantwoord = true;
+  stuurAntwoord(tekst);
+  toon('scherm-bevestiging');
+};
+
+function stuurAntwoord(antwoord) {
+  set(ref(db, 'antwoorden/' + mijnId), {
+    naam: mijnNaam,
+    antwoord,
+    tijdstip: Date.now()
+  });
+}
+</script>
+</body>
+</html>

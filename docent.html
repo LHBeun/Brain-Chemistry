@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Brain Chemistry – Docent</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: sans-serif; background: #0f172a; color: #e2e8f0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Header ── */
+header { background: #1e293b; padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 2px solid #334155; flex-shrink: 0; }
+header h1 { font-size: 1.25em; color: #38bdf8; }
+.hdr-badge { background: #334155; padding: 3px 10px; border-radius: 20px; font-size: 0.78em; color: #94a3b8; }
+.hdr-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.verbonden-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.leerlingen-teller { font-size: 0.85em; color: #94a3b8; }
+
+/* ── Layout ── */
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar ── */
+.sidebar { width: 340px; background: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-header { padding: 14px 16px 10px; border-bottom: 1px solid #334155; }
+.sidebar-header h2 { font-size: 0.8em; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin-bottom: 10px; }
+.filter-rij { display: flex; flex-direction: column; gap: 6px; }
+select.filter, input.filter {
+  width: 100%; padding: 7px 10px; background: #0f172a; border: 1px solid #334155;
+  border-radius: 6px; color: #e2e8f0; font-size: 0.85em; outline: none;
+}
+select.filter:focus, input.filter:focus { border-color: #38bdf8; }
+
+.quiz-lijst { flex: 1; overflow-y: auto; padding: 8px; }
+.quiz-item {
+  padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px;
+  border: 1px solid transparent; transition: background .12s, border-color .12s;
+}
+.quiz-item:hover { background: #0f172a; }
+.quiz-item.actief { background: #0c1f38; border-color: #38bdf8; }
+.quiz-naam { font-size: .92em; font-weight: 600; color: #e2e8f0; margin-bottom: 3px; }
+.quiz-meta { font-size: .76em; color: #64748b; display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { background: #1e3a5f; color: #7dd3fc; padding: 2px 7px; border-radius: 10px; font-size: .75em; }
+.tag.groen { background: #14532d; color: #86efac; }
+.tag.paars { background: #3b0764; color: #d8b4fe; }
+.tag.oranje { background: #431407; color: #fdba74; }
+.geen-quizzes { padding: 20px; text-align: center; color: #475569; font-size: .88em; }
+
+.sidebar-footer { padding: 12px; border-top: 1px solid #334155; }
+.btn { cursor: pointer; border: none; border-radius: 6px; font-weight: 700; font-size: .88em; padding: 8px 14px; transition: opacity .15s; }
+.btn:hover { opacity: .85; }
+.btn-blauw  { background: #38bdf8; color: #0f172a; }
+.btn-groen  { background: #22c55e; color: #0f172a; }
+.btn-rood   { background: #ef4444; color: #fff; }
+.btn-grijs  { background: #334155; color: #e2e8f0; }
+.btn-oranje { background: #f97316; color: #0f172a; }
+.btn-full   { width: 100%; }
+
+/* ── Hoofdscherm ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Leeg scherm */
+.leeg-scherm { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #334155; }
+.leeg-scherm .icon { font-size: 3em; margin-bottom: 14px; }
+.leeg-scherm p { font-size: .95em; }
+
+/* Quiz detail */
+.quiz-detail { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.quiz-detail-header { padding: 18px 24px; background: #1e293b; border-bottom: 1px solid #334155; flex-shrink: 0; }
+.quiz-detail-header h2 { font-size: 1.3em; margin-bottom: 6px; }
+.quiz-detail-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.quiz-acties { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.quiz-content { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+/* Vragen in quiz */
+.vraag-sectie-titel { font-size: .78em; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.vraag-rij {
+  background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+  padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px;
+}
+.vraag-rij-nr { color: #475569; font-size: .8em; flex-shrink: 0; padding-top: 2px; min-width: 24px; }
+.vraag-rij-body { flex: 1; min-width: 0; }
+.vraag-rij-tekst { font-size: .92em; color: #cbd5e1; }
+.vraag-rij-opties { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+.optie-chip { font-size: .75em; padding: 2px 8px; border-radius: 10px; background: #334155; color: #94a3b8; }
+.optie-chip.juist { background: #14532d; color: #86efac; }
+.vraag-rij-acties { display: flex; gap: 6px; flex-shrink: 0; }
+.mc-badge  { font-size: .72em; padding: 2px 7px; border-radius: 10px; background: #1e3a5f; color: #7dd3fc; }
+.open-badge{ font-size: .72em; padding: 2px 7px; border-radius: 10px; background: #3b0764; color: #d8b4fe; }
+
+/* Nieuwe vraag formulier */
+.nieuwe-vraag-form { background: #1e293b; border: 1px dashed #334155; border-radius: 8px; padding: 16px; margin-top: 12px; }
+.form-rij { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-rij.enkel { grid-template-columns: 1fr; }
+label.form-label { font-size: .8em; color: #64748b; display: block; margin-bottom: 4px; }
+input.form-inp, textarea.form-inp, select.form-inp {
+  width: 100%; padding: 7px 10px; background: #0f172a; border: 1px solid #334155;
+  border-radius: 6px; color: #e2e8f0; font-size: .9em; outline: none;
+}
+textarea.form-inp { resize: vertical; font-family: sans-serif; }
+input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-color: #38bdf8; }
+
+.mc-opties-grid { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.mc-opt-rij { display: flex; gap: 6px; align-items: center; }
+.mc-letter { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .82em; flex-shrink: 0; }
+.mc-letter.A { background: #ef4444; } .mc-letter.B { background: #f97316; }
+.mc-letter.C { background: #22c55e; color: #0f172a; } .mc-letter.D { background: #3b82f6; }
+.juist-radio { cursor: pointer; width: 15px; height: 15px; flex-shrink: 0; accent-color: #22c55e; }
+.form-acties { display: flex; gap: 8px; margin-top: 12px; }
+
+/* ── Sessie scherm ── */
+.sessie-scherm { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.sessie-header { padding: 14px 24px; background: #1e293b; border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.sessie-header h2 { font-size: 1em; }
+.voortgang { font-size: .85em; color: #64748b; }
+.sessie-body { flex: 1; display: flex; gap: 20px; padding: 20px 24px; overflow: hidden; }
+.sessie-links { flex: 1; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+.sessie-rechts { width: 300px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; flex-shrink: 0; }
+
+.actieve-vraag-kaart { background: #1e293b; border-radius: 12px; padding: 22px; }
+.actieve-vraag-kaart .type-lbl { font-size: .78em; color: #64748b; margin-bottom: 8px; }
+.actieve-vraag-kaart h3 { font-size: 1.2em; line-height: 1.4; margin-bottom: 18px; }
+.mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mc-blok { border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 8px; font-size: .9em; font-weight: 600; }
+.mc-blok.A{background:#7f1d1d} .mc-blok.B{background:#7c2d12} .mc-blok.C{background:#14532d} .mc-blok.D{background:#1e3a5f}
+.mc-blok.juist { outline: 3px solid #22c55e; }
+.mc-blok .ltr { font-size: 1.1em; font-weight: 800; }
+
+.stats-kaart { background: #1e293b; border-radius: 12px; padding: 18px; }
+.stats-kaart h4 { font-size: .78em; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin-bottom: 12px; }
+.balk-wrap { display: flex; flex-direction: column; gap: 7px; }
+.balk-rij { display: flex; align-items: center; gap: 8px; font-size: .84em; }
+.balk-lbl { width: 110px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #94a3b8; }
+.balk-out { flex: 1; background: #334155; border-radius: 4px; height: 20px; overflow: hidden; }
+.balk-in  { height: 100%; border-radius: 4px; transition: width .4s; display: flex; align-items: center; padding-left: 6px; font-size: .78em; font-weight: 700; color: #0f172a; min-width: 2px; }
+.balk-cnt { width: 28px; text-align: right; color: #64748b; }
+.open-antw-lijst { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
+.open-antw-item { background: #0f172a; border-radius: 6px; padding: 8px 12px; font-size: .86em; }
+.open-antw-naam { font-size: .75em; color: #475569; margin-bottom: 2px; }
+.score-info { margin-top: 10px; font-size: .84em; }
+.deelnemers-info { background: #1e293b; border-radius: 10px; padding: 14px; }
+.deeln-getal { font-size: 2em; font-weight: 700; color: #38bdf8; }
+.deeln-lbl { font-size: .82em; color: #64748b; }
+.sessie-knoppen { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal { background: #1e293b; border-radius: 14px; padding: 28px; width: 480px; max-width: 95vw; border: 1px solid #334155; }
+.modal h3 { margin-bottom: 18px; font-size: 1.1em; }
+.modal-acties { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧪 Brain Chemistry</h1>
+  <span class="hdr-badge">Docent</span>
+  <div class="hdr-right">
+    <div class="verbonden-dot"></div>
+    <span class="leerlingen-teller"><span id="deeln-teller">0</span> leerlingen online</span>
+    <button class="btn btn-grijs" onclick="exporteerData()" style="font-size:.8em;padding:6px 10px;">📥 Export CSV</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Quizzes</h2>
+      <div class="filter-rij">
+        <select class="filter" id="filter-leerjaar" onchange="filterQuizzes()">
+          <option value="">Alle leerjaren</option>
+          <option>3</option><option>4</option><option>5</option><option>6</option>
+        </select>
+        <select class="filter" id="filter-niveau" onchange="filterQuizzes()">
+          <option value="">Alle niveaus</option>
+          <option>MAVO</option><option>HAVO</option><option>VWO</option>
+        </select>
+        <input class="filter" id="filter-onderwerp" placeholder="Zoek op onderwerp…" oninput="filterQuizzes()">
+      </div>
+    </div>
+    <div class="quiz-lijst" id="quiz-lijst">
+      <div class="geen-quizzes">Nog geen quizzes.<br>Maak er een aan!</div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn btn-blauw btn-full" onclick="openNieuweQuizModal()">+ Nieuwe quiz</button>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <div class="main" id="main">
+    <div class="leeg-scherm">
+      <div class="icon">📚</div>
+      <p>Selecteer een quiz of maak een nieuwe aan</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: nieuwe quiz -->
+<div class="modal-overlay" id="modal-quiz" style="display:none">
+  <div class="modal">
+    <h3 id="modal-quiz-titel">Nieuwe quiz</h3>
+    <div class="form-rij">
+      <div>
+        <label class="form-label">Naam</label>
+        <input class="form-inp" id="modal-naam" placeholder="Bijv. Zuren en Basen – herhaling">
+      </div>
+      <div>
+        <label class="form-label">Leerjaar</label>
+        <select class="form-inp" id="modal-leerjaar">
+          <option>3</option><option>4</option><option>5</option><option>6</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-rij">
+      <div>
+        <label class="form-label">Niveau</label>
+        <select class="form-inp" id="modal-niveau">
+          <option>MAVO</option><option>HAVO</option><option>VWO</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Onderwerp</label>
+        <input class="form-inp" id="modal-onderwerp" placeholder="Bijv. Zuren en Basen">
+      </div>
+    </div>
+    <div class="modal-acties">
+      <button class="btn btn-grijs" onclick="sluitModal('modal-quiz')">Annuleren</button>
+      <button class="btn btn-blauw" onclick="slaQuizOp()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, remove, get, update }
+    from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCmCeuVZr888XzPkfX5MrQ8xxZ96ttaIsQ",
+  authDomain: "brain-chemistry.firebaseapp.com",
+  databaseURL: "https://brain-chemistry-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "brain-chemistry",
+  storageBucket: "brain-chemistry.firebasestorage.app",
+  messagingSenderId: "359983668951",
+  appId: "1:359983668951:web:8c3504c9d5734219a31a92"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ══════════════════════════════════════════════════════════
+//  State
+// ══════════════════════════════════════════════════════════
+let alleQuizzes   = {};   // { quizId: { naam, leerjaar, niveau, onderwerp, vragen: {vId: {...}} } }
+let actieveQuizId = null;
+let sessieActief  = false;
+let sessieVraagIdx = 0;
+
+// ══════════════════════════════════════════════════════════
+//  Firebase listeners
+// ══════════════════════════════════════════════════════════
+onValue(ref(db, 'quizzes'), snap => {
+  alleQuizzes = snap.exists() ? snap.val() : {};
+  renderQuizLijst();
+  if (actieveQuizId && !sessieActief) toonQuizDetail(actieveQuizId);
+});
+
+onValue(ref(db, 'deelnemers'), snap => {
+  document.getElementById('deeln-teller').textContent = snap.exists() ? Object.keys(snap.val()).length : 0;
+});
+
+onValue(ref(db, 'antwoorden'), snap => {
+  if (!sessieActief) return;
+  const quiz  = alleQuizzes[actieveQuizId];
+  if (!quiz) return;
+  const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
+  const vraag  = vragen[sessieVraagIdx];
+  if (!vraag) return;
+  toonSessieStats(snap.exists() ? snap.val() : {}, vraag);
+});
+
+// ══════════════════════════════════════════════════════════
+//  Quizlijst renderen
+// ══════════════════════════════════════════════════════════
+function renderQuizLijst() {
+  const leerjaar  = document.getElementById('filter-leerjaar').value;
+  const niveau    = document.getElementById('filter-niveau').value;
+  const onderwerp = document.getElementById('filter-onderwerp').value.toLowerCase();
+  const el        = document.getElementById('quiz-lijst');
+
+  const gefilterd = Object.entries(alleQuizzes).filter(([, q]) => {
+    if (leerjaar  && q.leerjaar  !== leerjaar)  return false;
+    if (niveau    && q.niveau    !== niveau)    return false;
+    if (onderwerp && !q.onderwerp?.toLowerCase().includes(onderwerp)) return false;
+    return true;
+  });
+
+  if (!gefilterd.length) {
+    el.innerHTML = '<div class="geen-quizzes">Geen quizzes gevonden.</div>';
+    return;
+  }
+
+  el.innerHTML = '';
+  gefilterd.forEach(([id, q]) => {
+    const n = q.vragen ? Object.keys(q.vragen).length : 0;
+    const div = document.createElement('div');
+    div.className = 'quiz-item' + (id === actieveQuizId ? ' actief' : '');
+    div.innerHTML = `
+      <div class="quiz-naam">${q.naam}</div>
+      <div class="quiz-meta">
+        <span class="tag">${q.leerjaar}</span>
+        <span class="tag groen">${q.niveau}</span>
+        <span class="tag paars">${q.onderwerp}</span>
+        <span style="color:#475569">${n} vragen</span>
+      </div>`;
+    div.onclick = () => { actieveQuizId = id; renderQuizLijst(); toonQuizDetail(id); };
+    el.appendChild(div);
+  });
+}
+
+window.filterQuizzes = renderQuizLijst;
+
+// ══════════════════════════════════════════════════════════
+//  Quiz detail scherm
+// ══════════════════════════════════════════════════════════
+function toonQuizDetail(quizId) {
+  const q      = alleQuizzes[quizId];
+  if (!q) return;
+  const vragen = q.vragen ? Object.entries(q.vragen) : [];
+
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <div class="quiz-detail">
+      <div class="quiz-detail-header">
+        <h2>${q.naam}</h2>
+        <div class="quiz-detail-meta">
+          <span class="tag">${q.leerjaar}</span>
+          <span class="tag groen">${q.niveau}</span>
+          <span class="tag paars">${q.onderwerp}</span>
+        </div>
+        <div class="quiz-acties">
+          <button class="btn btn-groen" onclick="startQuiz('${quizId}')">▶ Start quiz</button>
+          <button class="btn btn-grijs" onclick="openBewerkenModal('${quizId}')">✏ Bewerken</button>
+          <button class="btn btn-rood"  onclick="verwijderQuiz('${quizId}')">🗑 Verwijderen</button>
+        </div>
+      </div>
+      <div class="quiz-content">
+        <div class="vraag-sectie-titel">
+          <span>VRAGEN</span>
+          <span style="color:#475569">${vragen.length}</span>
+        </div>
+        <div id="vraag-lijst-detail">
+          ${vragen.length === 0 ? '<p style="color:#475569;font-size:.88em;">Nog geen vragen. Voeg er een toe hieronder.</p>' : ''}
+          ${vragen.map(([vid, v], i) => renderVraagRij(quizId, vid, v, i)).join('')}
+        </div>
+        <div class="nieuwe-vraag-form" id="nieuw-vraag-form">
+          <div style="font-size:.82em;color:#64748b;margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">+ Nieuwe vraag</div>
+          <div class="form-rij">
+            <div>
+              <label class="form-label">Type</label>
+              <select class="form-inp" id="nv-type" onchange="toggleNvType()">
+                <option value="mc">Meerkeuze (MC)</option>
+                <option value="open">Open vraag</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-rij enkel">
+            <div>
+              <label class="form-label">Vraag</label>
+              <textarea class="form-inp" id="nv-tekst" rows="2" placeholder="Typ je vraag…"></textarea>
+            </div>
+          </div>
+          <div id="nv-mc-veld">
+            <label class="form-label">Opties <span style="color:#475569">(vink juiste antwoord aan)</span></label>
+            <div class="mc-opties-grid">
+              ${['A','B','C','D'].map(l => `
+                <div class="mc-opt-rij">
+                  <div class="mc-letter ${l}">${l}</div>
+                  <input class="form-inp nv-opt" data-letter="${l}" placeholder="Optie ${l}${l==='D'?' (optioneel)':''}">
+                  <input type="radio" name="nv-juist" value="${l}" class="juist-radio" title="Juist antwoord">
+                </div>`).join('')}
+            </div>
+          </div>
+          <div class="form-acties">
+            <button class="btn btn-blauw" onclick="vraagToevoegen('${quizId}')">+ Toevoegen</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderVraagRij(quizId, vraagId, v, i) {
+  const badge = v.type === 'mc' ? '<span class="mc-badge">MC</span>' : '<span class="open-badge">Open</span>';
+  let opties = '';
+  if (v.type === 'mc' && v.opties) {
+    const letters = ['A','B','C','D'];
+    opties = '<div class="vraag-rij-opties">' +
+      v.opties.map((o, idx) => {
+        const l = letters[idx];
+        const isJuist = v.juist === l;
+        return `<span class="optie-chip${isJuist?' juist':''}">${l}: ${o}</span>`;
+      }).join('') + '</div>';
+  }
+  return `<div class="vraag-rij">
+    <div class="vraag-rij-nr">${i+1}</div>
+    <div class="vraag-rij-body">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">${badge}<span style="font-size:.72em;color:#475569">${v.tags?.onderwerp || ''}</span></div>
+      <div class="vraag-rij-tekst">${v.tekst}</div>
+      ${opties}
+    </div>
+    <div class="vraag-rij-acties">
+      <button class="btn btn-rood" style="padding:4px 8px;font-size:.78em;" onclick="vraagVerwijderen('${quizId}','${vraagId}')">✕</button>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+//  Vraag toevoegen
+// ══════════════════════════════════════════════════════════
+window.toggleNvType = function() {
+  const type = document.getElementById('nv-type').value;
+  document.getElementById('nv-mc-veld').style.display = type === 'mc' ? '' : 'none';
+};
+
+window.vraagToevoegen = async function(quizId) {
+  const type  = document.getElementById('nv-type').value;
+  const tekst = document.getElementById('nv-tekst').value.trim();
+  if (!tekst) { alert('Voer een vraagtekst in.'); return; }
+
+  const quiz = alleQuizzes[quizId];
+  const tags = { leerjaar: quiz.leerjaar, niveau: quiz.niveau, onderwerp: quiz.onderwerp };
+
+  const vraag = { type, tekst, tags, quizId, quizNaam: quiz.naam };
+
+  if (type === 'mc') {
+    const opties = [...document.querySelectorAll('.nv-opt')].map(i => i.value.trim()).filter(v => v);
+    if (opties.length < 2) { alert('Voer minimaal 2 opties in.'); return; }
+    const juist = document.querySelector('input[name=nv-juist]:checked');
+    vraag.opties = opties;
+    vraag.juist  = juist ? juist.value : null;
+  }
+
+  // Opslaan in quiz én vragenbank
+  const nieuwRef = push(ref(db, `quizzes/${quizId}/vragen`));
+  await set(nieuwRef, vraag);
+  await set(ref(db, `vragenbank/${nieuwRef.key}`), vraag);
+
+  // Reset formulier
+  document.getElementById('nv-tekst').value = '';
+  document.querySelectorAll('.nv-opt').forEach(i => i.value = '');
+  document.querySelectorAll('input[name=nv-juist]').forEach(r => r.checked = false);
+};
+
+window.vraagVerwijderen = async function(quizId, vraagId) {
+  if (!confirm('Vraag verwijderen?')) return;
+  await remove(ref(db, `quizzes/${quizId}/vragen/${vraagId}`));
+  await remove(ref(db, `vragenbank/${vraagId}`));
+};
+
+// ══════════════════════════════════════════════════════════
+//  Quiz aanmaken / bewerken / verwijderen
+// ══════════════════════════════════════════════════════════
+let bewerkQuizId = null;
+
+window.openNieuweQuizModal = function() {
+  bewerkQuizId = null;
+  document.getElementById('modal-quiz-titel').textContent = 'Nieuwe quiz';
+  document.getElementById('modal-naam').value = '';
+  document.getElementById('modal-onderwerp').value = '';
+  document.getElementById('modal-quiz').style.display = 'flex';
+};
+
+window.openBewerkenModal = function(quizId) {
+  const q = alleQuizzes[quizId];
+  bewerkQuizId = quizId;
+  document.getElementById('modal-quiz-titel').textContent = 'Quiz bewerken';
+  document.getElementById('modal-naam').value = q.naam;
+  document.getElementById('modal-leerjaar').value = q.leerjaar;
+  document.getElementById('modal-niveau').value = q.niveau;
+  document.getElementById('modal-onderwerp').value = q.onderwerp;
+  document.getElementById('modal-quiz').style.display = 'flex';
+};
+
+window.slaQuizOp = async function() {
+  const naam      = document.getElementById('modal-naam').value.trim();
+  const leerjaar  = document.getElementById('modal-leerjaar').value;
+  const niveau    = document.getElementById('modal-niveau').value;
+  const onderwerp = document.getElementById('modal-onderwerp').value.trim();
+  if (!naam || !onderwerp) { alert('Vul naam en onderwerp in.'); return; }
+
+  if (bewerkQuizId) {
+    await update(ref(db, `quizzes/${bewerkQuizId}`), { naam, leerjaar, niveau, onderwerp });
+  } else {
+    const newRef = push(ref(db, 'quizzes'));
+    await set(newRef, { naam, leerjaar, niveau, onderwerp, vragen: {} });
+    actieveQuizId = newRef.key;
+  }
+  sluitModal('modal-quiz');
+};
+
+window.verwijderQuiz = async function(quizId) {
+  if (!confirm('Quiz en alle bijbehorende vragen verwijderen?')) return;
+  // Verwijder ook uit vragenbank
+  const q = alleQuizzes[quizId];
+  if (q?.vragen) {
+    for (const vid of Object.keys(q.vragen)) {
+      await remove(ref(db, `vragenbank/${vid}`));
+    }
+  }
+  await remove(ref(db, `quizzes/${quizId}`));
+  actieveQuizId = null;
+  document.getElementById('main').innerHTML = `
+    <div class="leeg-scherm"><div class="icon">📚</div><p>Selecteer een quiz of maak een nieuwe aan</p></div>`;
+};
+
+window.sluitModal = function(id) {
+  document.getElementById(id).style.display = 'none';
+};
+
+// ══════════════════════════════════════════════════════════
+//  Sessie starten
+// ══════════════════════════════════════════════════════════
+window.startQuiz = async function(quizId) {
+  const quiz   = alleQuizzes[quizId];
+  const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
+  if (!vragen.length) { alert('Deze quiz heeft nog geen vragen.'); return; }
+
+  actieveQuizId  = quizId;
+  sessieActief   = true;
+  sessieVraagIdx = 0;
+
+  await remove(ref(db, 'antwoorden'));
+  await set(ref(db, 'sessie'), {
+    actief: true, quizId, quizNaam: quiz.naam,
+    vraagIdx: 0, vraag: vragen[0]
+  });
+
+  toonSessieScherm(quizId, 0);
+};
+
+function toonSessieScherm(quizId, idx) {
+  const quiz   = alleQuizzes[quizId];
+  const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
+  const v      = vragen[idx];
+  const totaal = vragen.length;
+
+  let vraagHTML = '';
+  if (v.type === 'mc') {
+    const letters = ['A','B','C','D'];
+    vraagHTML = '<div class="mc-grid">' +
+      v.opties.map((o, i) => {
+        const l = letters[i];
+        return `<div class="mc-blok ${l}${v.juist===l?' juist':''}"><span class="ltr">${l}</span>${o}</div>`;
+      }).join('') + '</div>';
+  }
+
+  document.getElementById('main').innerHTML = `
+    <div class="sessie-scherm">
+      <div class="sessie-header">
+        <h2>🎓 ${quiz.naam}</h2>
+        <span class="voortgang">Vraag ${idx+1} van ${totaal}</span>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          ${idx + 1 < totaal
+            ? `<button class="btn btn-blauw" onclick="volgendeVraag('${quizId}',${idx+1})">Volgende vraag →</button>`
+            : `<button class="btn btn-oranje" onclick="eindeQuiz('${quizId}')">Quiz afronden ✓</button>`}
+          <button class="btn btn-rood" onclick="stopSessie('${quizId}')">⏹ Stop</button>
+        </div>
+      </div>
+      <div class="sessie-body">
+        <div class="sessie-links">
+          <div class="actieve-vraag-kaart">
+            <div class="type-lbl">${v.type === 'mc' ? 'Meerkeuze' : 'Open vraag'} · Vraag ${idx+1}/${totaal}</div>
+            <h3>${v.tekst}</h3>
+            ${vraagHTML}
+          </div>
+        </div>
+        <div class="sessie-rechts">
+          <div class="deelnemers-info">
+            <div class="deeln-getal" id="sessie-deeln-teller">0</div>
+            <div class="deeln-lbl">leerlingen online</div>
+          </div>
+          <div class="stats-kaart">
+            <h4>Antwoorden</h4>
+            <div id="sessie-stats"><em style="color:#475569;font-size:.85em">Wachten…</em></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Bind deelnemers live ook in sessie
+  onValue(ref(db, 'deelnemers'), snap => {
+    const el = document.getElementById('sessie-deeln-teller');
+    if (el) el.textContent = snap.exists() ? Object.keys(snap.val()).length : 0;
+  });
+}
+
+window.volgendeVraag = async function(quizId, idx) {
+  const quiz   = alleQuizzes[quizId];
+  const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
+  sessieVraagIdx = idx;
+  await remove(ref(db, 'antwoorden'));
+  await update(ref(db, 'sessie'), { vraagIdx: idx, vraag: vragen[idx] });
+  toonSessieScherm(quizId, idx);
+};
+
+window.eindeQuiz = async function(quizId) {
+  await set(ref(db, 'sessie/actief'), false);
+  sessieActief = false;
+  alert('Quiz afgerond! Resultaten zijn exporteerbaar via de knop rechtsboven.');
+  toonQuizDetail(quizId);
+};
+
+window.stopSessie = async function(quizId) {
+  if (!confirm('Sessie stoppen?')) return;
+  await set(ref(db, 'sessie/actief'), false);
+  sessieActief = false;
+  toonQuizDetail(quizId);
+};
+
+// ══════════════════════════════════════════════════════════
+//  Statistieken
+// ══════════════════════════════════════════════════════════
+function toonSessieStats(data, vraag) {
+  const el = document.getElementById('sessie-stats');
+  if (!el) return;
+  const antwoorden = Object.values(data);
+  if (!antwoorden.length) { el.innerHTML = '<em style="color:#475569;font-size:.85em">Wachten…</em>'; return; }
+
+  if (vraag.type === 'mc') {
+    const tl = {}; const letters = ['A','B','C','D'];
+    vraag.opties.forEach((_, i) => tl[letters[i]] = 0);
+    antwoorden.forEach(a => { if (tl[a.antwoord] !== undefined) tl[a.antwoord]++; });
+    const kleuren = { A:'#ef4444', B:'#f97316', C:'#22c55e', D:'#3b82f6' };
+    let html = '<div class="balk-wrap">';
+    vraag.opties.forEach((opt, i) => {
+      const l = letters[i], n = tl[l];
+      const pct = Math.round(n / antwoorden.length * 100);
+      html += `<div class="balk-rij">
+        <div class="balk-lbl">${l}: ${opt}</div>
+        <div class="balk-out"><div class="balk-in" style="width:${pct}%;background:${kleuren[l]}">${pct>10?pct+'%':''}</div></div>
+        <div class="balk-cnt">${n}</div>
+      </div>`;
+    });
+    html += '</div>';
+    if (vraag.juist) {
+      const goedN = tl[vraag.juist] || 0;
+      const pct   = Math.round(goedN / antwoorden.length * 100);
+      html += `<div class="score-info">✅ <strong style="color:#22c55e">${pct}%</strong> goed · ❌ <strong style="color:#ef4444">${100-pct}%</strong> fout</div>`;
+    }
+    html += `<div style="margin-top:8px;font-size:.8em;color:#475569">Totaal: ${antwoorden.length}</div>`;
+    el.innerHTML = html;
+  } else {
+    let html = '<div class="open-antw-lijst">';
+    antwoorden.forEach(a => {
+      html += `<div class="open-antw-item"><div class="open-antw-naam">${a.naam || 'Anoniem'}</div>${a.antwoord}</div>`;
+    });
+    html += `</div><div style="margin-top:8px;font-size:.8em;color:#475569">Totaal: ${antwoorden.length}</div>`;
+    el.innerHTML = html;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  Export
+// ══════════════════════════════════════════════════════════
+window.exporteerData = async function() {
+  const snap = await get(ref(db, 'antwoorden'));
+  const antw = snap.exists() ? Object.values(snap.val()) : [];
+  if (!antw.length) { alert('Geen antwoorden om te exporteren.'); return; }
+  let csv = 'Naam,Antwoord,Tijdstip\n';
+  antw.forEach(a => {
+    const t = a.tijdstip ? new Date(a.tijdstip).toLocaleTimeString('nl-NL') : '';
+    csv += `"${a.naam||''}","${a.antwoord}","${t}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'antwoorden.csv';
+  link.click();
+};
+</script>
+</body>
+</html>

@@ -949,14 +949,24 @@ window.exporteerQuizResultaten = async function(sessieId) {
 };
 
 // ── Import / Voorbeeld ──
+// Kolommen: type, vraag, optieA, optieB, optieC, optieD, optieE, optieF, juist, sleutelwoorden
+// mc       : opties in A-F kolommen, juist = één letter
+// mc-multi : opties in A-F kolommen, juist = kommagescheiden letters  bijv. "A,C"
+// matching : optieA = koppelparen  bijv. "H2O:water|NaCl:zout"
+// sorteren : optieA = items in volgorde bijv. "stap1|stap2|stap3"
+// open     : sleutelwoorden in laatste kolom
+
 window.downloadVoorbeeldCSV = function() {
   const inhoud = [
     'naam,leerjaar,niveau,onderwerp',
     '"Zuren en Basen – herhaling",4,HAVO,Zuren en Basen',
-    'type,vraag,optieA,optieB,optieC,optieD,juist,sleutelwoorden',
-    'mc,"Wat is het pH van puur water?",5,6,7,8,C,',
-    'mc,"Welk van deze stoffen is een sterk zuur?",Azijnzuur,Zoutzuur,Citroenzuur,Koolzuur,B,',
-    'open,"Wat verstaan we onder neutralisatie?",,,,,,"zuur en base, water en zout"',
+    'type,vraag,optieA,optieB,optieC,optieD,optieE,optieF,juist,sleutelwoorden',
+    'mc,"Wat is het pH van puur water?",5,6,7,8,,,C,',
+    'mc,"Welke stof is een sterk zuur?",Azijnzuur,Zoutzuur,Citroenzuur,Koolzuur,,,B,',
+    'mc-multi,"Welke van deze stoffen zijn zuren?",Azijnzuur,Loog,Citroenzuur,Water,Zoutzuur,,"A,C,E",',
+    'matching,"Koppel de formule aan de stofnaam.","H2O:water|NaCl:keukenzout|HCl:zoutzuur",,,,,,',
+    'sorteren,"Zet de stappen van een titratie in de juiste volgorde.","Vul de buret|Voeg indicator toe|Titreer tot omslagpunt|Lees het volume af",,,,,,',
+    'open,"Wat verstaan we onder neutralisatie?",,,,,,,,"zuur en base, water en zout"',
   ].join('\n');
   const link = document.createElement('a');
   link.href = URL.createObjectURL(new Blob([inhoud], { type: 'text/csv;charset=utf-8;' }));
@@ -993,12 +1003,30 @@ window.importeerCSV = async function(event) {
   const vragen = {};
 
   for (const regel of regels.slice(3)) {
-    const [type, vraagtekst, a, b, c, d, juist, sleutelwoorden] = parseCsv(regel);
+    const [type, vraagtekst, a, b, c, d, e, f, juist, sleutelwoorden] = parseCsv(regel);
     if (!type || !vraagtekst) continue;
     const tags  = { leerjaar, niveau, onderwerp };
     const vraag = { type, tekst: vraagtekst, tags, quizId, quizNaam };
-    if (type === 'mc') { vraag.opties = [a, b, c, d].filter(o => o); vraag.juist = juist || null; }
-    else               { vraag.sleutelwoorden = sleutelwoorden || ''; }
+
+    if (type === 'mc') {
+      vraag.opties = [a, b, c, d, e, f].filter(o => o);
+      vraag.juist  = juist || null;
+    } else if (type === 'mc-multi') {
+      vraag.opties = [a, b, c, d, e, f].filter(o => o);
+      vraag.juist  = juist ? juist.split(',').map(s => s.trim()) : [];
+    } else if (type === 'matching') {
+      // a = "term1:def1|term2:def2|..."
+      vraag.paren = (a || '').split('|').map(p => {
+        const [l, r] = p.split(':');
+        return { l: (l||'').trim(), r: (r||'').trim() };
+      }).filter(p => p.l && p.r);
+    } else if (type === 'sorteren') {
+      // a = "item1|item2|item3"
+      vraag.items = (a || '').split('|').map(s => s.trim()).filter(s => s);
+    } else {
+      vraag.sleutelwoorden = sleutelwoorden || '';
+    }
+
     const vid = push(ref(db, `quizzes/${quizId}/vragen`)).key;
     vragen[vid] = vraag;
     await set(ref(db, `vragenbank/${vid}`), vraag);

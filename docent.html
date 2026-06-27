@@ -170,8 +170,10 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
     <div class="quiz-lijst" id="quiz-lijst">
       <div class="geen-quizzes">Nog geen quizzes.<br>Maak er een aan!</div>
     </div>
-    <div class="sidebar-footer">
+    <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:6px;">
       <button class="btn btn-blauw btn-full" onclick="openNieuweQuizModal()">+ Nieuwe quiz</button>
+      <button class="btn btn-grijs btn-full" onclick="document.getElementById('csv-import').click()">📂 Importeer quiz (CSV)</button>
+      <input type="file" id="csv-import" accept=".csv" style="display:none" onchange="importeerCSV(event)">
     </div>
   </div>
 
@@ -705,6 +707,77 @@ function toonScoresMini(scores) {
       <div class="score-punten">${s.punten}</div>
     </div>`).join('');
 }
+
+// ── Import CSV ─────────────────────────────────────────────
+window.importeerCSV = async function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const tekst = await file.text();
+  const regels = tekst.split('\n').map(r => r.trim()).filter(r => r);
+
+  // Eerste regel = header, tweede regel = quizinfo, rest = vragen
+  // Verwacht formaat header: naam,leerjaar,niveau,onderwerp
+  // Quizinfo regel: "Zuren en Basen",4,HAVO,Zuren en Basen
+  // Vraag header: type,vraag,optieA,optieB,optieC,optieD,juist,sleutelwoorden
+  // MC regel:  mc,"Wat is het pH van water?",6,7,8,9,C,
+  // Open regel: open,"Wat is oxidatie?",,,,,,"elektronen afstaan, oxideren"
+
+  if (regels.length < 3) { alert('CSV heeft te weinig regels.'); return; }
+
+  function parseCsvRegel(regel) {
+    const result = [];
+    let huidig = '', inAanhalingstekens = false;
+    for (let i = 0; i < regel.length; i++) {
+      const c = regel[i];
+      if (c === '"') { inAanhalingstekens = !inAanhalingstekens; }
+      else if (c === ',' && !inAanhalingstekens) { result.push(huidig.trim()); huidig = ''; }
+      else { huidig += c; }
+    }
+    result.push(huidig.trim());
+    return result;
+  }
+
+  const quizInfo  = parseCsvRegel(regels[1]);
+  const quizNaam  = quizInfo[0] || 'Geïmporteerde quiz';
+  const leerjaar  = quizInfo[1] || '4';
+  const niveau    = quizInfo[2] || 'HAVO';
+  const onderwerp = quizInfo[3] || '';
+
+  // Vragen starten vanaf regel 4 (index 3), regel 3 is vraag-header
+  const vraagRegels = regels.slice(3);
+  if (!vraagRegels.length) { alert('Geen vragen gevonden in CSV.'); return; }
+
+  const newRef = push(ref(db, 'quizzes'));
+  const quizId = newRef.key;
+  const vragen = {};
+
+  for (const regel of vraagRegels) {
+    if (!regel) continue;
+    const [type, vraagtekst, a, b, c, d, juist, sleutelwoorden] = parseCsvRegel(regel);
+    if (!type || !vraagtekst) continue;
+
+    const tags  = { leerjaar, niveau, onderwerp };
+    const vraag = { type, tekst: vraagtekst, tags, quizId, quizNaam };
+
+    if (type === 'mc') {
+      const opties = [a, b, c, d].filter(o => o);
+      vraag.opties = opties;
+      vraag.juist  = juist || null;
+    } else {
+      vraag.sleutelwoorden = sleutelwoorden || '';
+    }
+
+    const vid = push(ref(db, `quizzes/${quizId}/vragen`)).key;
+    vragen[vid] = vraag;
+    await set(ref(db, `vragenbank/${vid}`), vraag);
+  }
+
+  await set(newRef, { naam: quizNaam, leerjaar, niveau, onderwerp, vragen });
+  actieveQuizId = quizId;
+  event.target.value = '';
+  alert(`✅ Quiz "${quizNaam}" geïmporteerd met ${Object.keys(vragen).length} vragen!`);
+};
 
 // ── Export ─────────────────────────────────────────────────
 window.exporteerData = async function() {

@@ -7,34 +7,25 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: sans-serif; background: #0f172a; color: #e2e8f0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-/* ── Header ── */
 header { background: #1e293b; padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 2px solid #334155; flex-shrink: 0; }
 header h1 { font-size: 1.25em; color: #38bdf8; }
-.hdr-badge { background: #334155; padding: 3px 10px; border-radius: 20px; font-size: 0.78em; color: #94a3b8; }
+.hdr-badge { background: #334155; padding: 3px 10px; border-radius: 20px; font-size: .78em; color: #94a3b8; }
 .hdr-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 .verbonden-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-.leerlingen-teller { font-size: 0.85em; color: #94a3b8; }
+.leerlingen-teller { font-size: .85em; color: #94a3b8; }
 
-/* ── Layout ── */
 .layout { display: flex; flex: 1; overflow: hidden; }
 
-/* ── Sidebar ── */
 .sidebar { width: 340px; background: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; flex-shrink: 0; }
 .sidebar-header { padding: 14px 16px 10px; border-bottom: 1px solid #334155; }
-.sidebar-header h2 { font-size: 0.8em; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin-bottom: 10px; }
+.sidebar-header h2 { font-size: .8em; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin-bottom: 10px; }
 .filter-rij { display: flex; flex-direction: column; gap: 6px; }
-select.filter, input.filter {
-  width: 100%; padding: 7px 10px; background: #0f172a; border: 1px solid #334155;
-  border-radius: 6px; color: #e2e8f0; font-size: 0.85em; outline: none;
-}
+select.filter, input.filter { width: 100%; padding: 7px 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: .85em; outline: none; }
 select.filter:focus, input.filter:focus { border-color: #38bdf8; }
 
 .quiz-lijst { flex: 1; overflow-y: auto; padding: 8px; }
-.quiz-item {
-  padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px;
-  border: 1px solid transparent; transition: background .12s, border-color .12s;
-}
+.quiz-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; border: 1px solid transparent; transition: background .12s, border-color .12s; }
 .quiz-item:hover { background: #0f172a; }
 .quiz-item.actief { background: #0c1f38; border-color: #38bdf8; }
 .quiz-naam { font-size: .92em; font-weight: 600; color: #e2e8f0; margin-bottom: 3px; }
@@ -42,80 +33,68 @@ select.filter:focus, input.filter:focus { border-color: #38bdf8; }
 .tag { background: #1e3a5f; color: #7dd3fc; padding: 2px 7px; border-radius: 10px; font-size: .75em; }
 .tag.groen { background: #14532d; color: #86efac; }
 .tag.paars { background: #3b0764; color: #d8b4fe; }
-.tag.oranje { background: #431407; color: #fdba74; }
 .geen-quizzes { padding: 20px; text-align: center; color: #475569; font-size: .88em; }
-
 .sidebar-footer { padding: 12px; border-top: 1px solid #334155; }
+
 .btn { cursor: pointer; border: none; border-radius: 6px; font-weight: 700; font-size: .88em; padding: 8px 14px; transition: opacity .15s; }
 .btn:hover { opacity: .85; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
 .btn-blauw  { background: #38bdf8; color: #0f172a; }
 .btn-groen  { background: #22c55e; color: #0f172a; }
 .btn-rood   { background: #ef4444; color: #fff; }
 .btn-grijs  { background: #334155; color: #e2e8f0; }
 .btn-oranje { background: #f97316; color: #0f172a; }
+.btn-paars  { background: #a855f7; color: #fff; }
 .btn-full   { width: 100%; }
 
-/* ── Hoofdscherm ── */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-/* Leeg scherm */
 .leeg-scherm { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #334155; }
 .leeg-scherm .icon { font-size: 3em; margin-bottom: 14px; }
-.leeg-scherm p { font-size: .95em; }
 
-/* Quiz detail */
 .quiz-detail { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .quiz-detail-header { padding: 18px 24px; background: #1e293b; border-bottom: 1px solid #334155; flex-shrink: 0; }
 .quiz-detail-header h2 { font-size: 1.3em; margin-bottom: 6px; }
 .quiz-detail-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 .quiz-acties { display: flex; gap: 8px; flex-wrap: wrap; }
-
 .quiz-content { flex: 1; overflow-y: auto; padding: 20px 24px; }
 
-/* Vragen in quiz */
 .vraag-sectie-titel { font-size: .78em; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-.vraag-rij {
-  background: #1e293b; border: 1px solid #334155; border-radius: 8px;
-  padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px;
-}
+.vraag-rij { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; }
 .vraag-rij-nr { color: #475569; font-size: .8em; flex-shrink: 0; padding-top: 2px; min-width: 24px; }
 .vraag-rij-body { flex: 1; min-width: 0; }
 .vraag-rij-tekst { font-size: .92em; color: #cbd5e1; }
 .vraag-rij-opties { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
 .optie-chip { font-size: .75em; padding: 2px 8px; border-radius: 10px; background: #334155; color: #94a3b8; }
 .optie-chip.juist { background: #14532d; color: #86efac; }
-.vraag-rij-acties { display: flex; gap: 6px; flex-shrink: 0; }
+.sleutel-chips { margin-top: 4px; display: flex; gap: 5px; flex-wrap: wrap; }
+.sleutel-chip { font-size: .72em; padding: 2px 7px; border-radius: 10px; background: #1a2e1a; color: #6ee7b7; border: 1px solid #22c55e44; }
 .mc-badge  { font-size: .72em; padding: 2px 7px; border-radius: 10px; background: #1e3a5f; color: #7dd3fc; }
 .open-badge{ font-size: .72em; padding: 2px 7px; border-radius: 10px; background: #3b0764; color: #d8b4fe; }
 
-/* Nieuwe vraag formulier */
 .nieuwe-vraag-form { background: #1e293b; border: 1px dashed #334155; border-radius: 8px; padding: 16px; margin-top: 12px; }
 .form-rij { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 .form-rij.enkel { grid-template-columns: 1fr; }
 label.form-label { font-size: .8em; color: #64748b; display: block; margin-bottom: 4px; }
-input.form-inp, textarea.form-inp, select.form-inp {
-  width: 100%; padding: 7px 10px; background: #0f172a; border: 1px solid #334155;
-  border-radius: 6px; color: #e2e8f0; font-size: .9em; outline: none;
-}
+input.form-inp, textarea.form-inp, select.form-inp { width: 100%; padding: 7px 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: .9em; outline: none; }
 textarea.form-inp { resize: vertical; font-family: sans-serif; }
 input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-color: #38bdf8; }
 
 .mc-opties-grid { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 .mc-opt-rij { display: flex; gap: 6px; align-items: center; }
 .mc-letter { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .82em; flex-shrink: 0; }
-.mc-letter.A { background: #ef4444; } .mc-letter.B { background: #f97316; }
-.mc-letter.C { background: #22c55e; color: #0f172a; } .mc-letter.D { background: #3b82f6; }
+.mc-letter.A{background:#ef4444} .mc-letter.B{background:#f97316} .mc-letter.C{background:#22c55e;color:#0f172a} .mc-letter.D{background:#3b82f6}
 .juist-radio { cursor: pointer; width: 15px; height: 15px; flex-shrink: 0; accent-color: #22c55e; }
 .form-acties { display: flex; gap: 8px; margin-top: 12px; }
 
-/* ── Sessie scherm ── */
+/* Sessie */
 .sessie-scherm { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.sessie-header { padding: 14px 24px; background: #1e293b; border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.sessie-header { padding: 14px 24px; background: #1e293b; border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 12px; flex-shrink: 0; flex-wrap: wrap; }
 .sessie-header h2 { font-size: 1em; }
 .voortgang { font-size: .85em; color: #64748b; }
+.sessie-knoppen { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
 .sessie-body { flex: 1; display: flex; gap: 20px; padding: 20px 24px; overflow: hidden; }
 .sessie-links { flex: 1; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
-.sessie-rechts { width: 300px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; flex-shrink: 0; }
+.sessie-rechts { width: 280px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; flex-shrink: 0; }
 
 .actieve-vraag-kaart { background: #1e293b; border-radius: 12px; padding: 22px; }
 .actieve-vraag-kaart .type-lbl { font-size: .78em; color: #64748b; margin-bottom: 8px; }
@@ -130,18 +109,28 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
 .stats-kaart h4 { font-size: .78em; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin-bottom: 12px; }
 .balk-wrap { display: flex; flex-direction: column; gap: 7px; }
 .balk-rij { display: flex; align-items: center; gap: 8px; font-size: .84em; }
-.balk-lbl { width: 110px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #94a3b8; }
+.balk-lbl { width: 100px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #94a3b8; }
 .balk-out { flex: 1; background: #334155; border-radius: 4px; height: 20px; overflow: hidden; }
 .balk-in  { height: 100%; border-radius: 4px; transition: width .4s; display: flex; align-items: center; padding-left: 6px; font-size: .78em; font-weight: 700; color: #0f172a; min-width: 2px; }
 .balk-cnt { width: 28px; text-align: right; color: #64748b; }
-.open-antw-lijst { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
-.open-antw-item { background: #0f172a; border-radius: 6px; padding: 8px 12px; font-size: .86em; }
-.open-antw-naam { font-size: .75em; color: #475569; margin-bottom: 2px; }
+.open-antw-lijst { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
+.open-antw-item { border-radius: 6px; padding: 8px 12px; font-size: .86em; display: flex; align-items: flex-start; gap: 8px; }
+.open-antw-item.goed { background: #14532d; }
+.open-antw-item.fout { background: #1e293b; border: 1px solid #334155; }
+.open-antw-naam { font-size: .75em; color: #64748b; margin-bottom: 2px; }
+.open-antw-correct { font-size: .9em; flex-shrink: 0; }
 .score-info { margin-top: 10px; font-size: .84em; }
+
 .deelnemers-info { background: #1e293b; border-radius: 10px; padding: 14px; }
 .deeln-getal { font-size: 2em; font-weight: 700; color: #38bdf8; }
 .deeln-lbl { font-size: .82em; color: #64748b; }
-.sessie-knoppen { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.score-bord-mini { background: #1e293b; border-radius: 10px; padding: 14px; }
+.score-bord-mini h4 { font-size: .78em; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin-bottom: 10px; }
+.score-rij { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #1e293b; font-size: .85em; }
+.score-pos { width: 20px; color: #64748b; font-size: .78em; }
+.score-naam { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.score-punten { font-weight: 700; color: #38bdf8; }
 
 /* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
@@ -163,8 +152,6 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
 </header>
 
 <div class="layout">
-
-  <!-- ── SIDEBAR ── -->
   <div class="sidebar">
     <div class="sidebar-header">
       <h2>Quizzes</h2>
@@ -188,7 +175,6 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
     </div>
   </div>
 
-  <!-- ── MAIN ── -->
   <div class="main" id="main">
     <div class="leeg-scherm">
       <div class="icon">📚</div>
@@ -197,7 +183,7 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
   </div>
 </div>
 
-<!-- Modal: nieuwe quiz -->
+<!-- Modal: nieuwe/bewerken quiz -->
 <div class="modal-overlay" id="modal-quiz" style="display:none">
   <div class="modal">
     <h3 id="modal-quiz-titel">Nieuwe quiz</h3>
@@ -244,22 +230,18 @@ const firebaseConfig = {
   projectId: "brain-chemistry",
   storageBucket: "brain-chemistry.firebasestorage.app",
   messagingSenderId: "359983668951",
-  appId: "1:359983668951:web:8c3504c9d5734219a31a92"
+  appId: "1:35998368951:web:8c3504c9d5734219a31a92"
 };
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-// ══════════════════════════════════════════════════════════
-//  State
-// ══════════════════════════════════════════════════════════
-let alleQuizzes   = {};   // { quizId: { naam, leerjaar, niveau, onderwerp, vragen: {vId: {...}} } }
-let actieveQuizId = null;
-let sessieActief  = false;
+let alleQuizzes    = {};
+let actieveQuizId  = null;
+let sessieActief   = false;
 let sessieVraagIdx = 0;
+let huidigeFase    = 'wachten'; // 'vraag' | 'resultaten' | 'wachten'
 
-// ══════════════════════════════════════════════════════════
-//  Firebase listeners
-// ══════════════════════════════════════════════════════════
+// ── Listeners ──────────────────────────────────────────────
 onValue(ref(db, 'quizzes'), snap => {
   alleQuizzes = snap.exists() ? snap.val() : {};
   renderQuizLijst();
@@ -272,7 +254,7 @@ onValue(ref(db, 'deelnemers'), snap => {
 
 onValue(ref(db, 'antwoorden'), snap => {
   if (!sessieActief) return;
-  const quiz  = alleQuizzes[actieveQuizId];
+  const quiz   = alleQuizzes[actieveQuizId];
   if (!quiz) return;
   const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
   const vraag  = vragen[sessieVraagIdx];
@@ -280,9 +262,12 @@ onValue(ref(db, 'antwoorden'), snap => {
   toonSessieStats(snap.exists() ? snap.val() : {}, vraag);
 });
 
-// ══════════════════════════════════════════════════════════
-//  Quizlijst renderen
-// ══════════════════════════════════════════════════════════
+onValue(ref(db, 'scores'), snap => {
+  if (!sessieActief) return;
+  toonScoresMini(snap.exists() ? snap.val() : {});
+});
+
+// ── Quiz lijst ─────────────────────────────────────────────
 function renderQuizLijst() {
   const leerjaar  = document.getElementById('filter-leerjaar').value;
   const niveau    = document.getElementById('filter-niveau').value;
@@ -296,20 +281,17 @@ function renderQuizLijst() {
     return true;
   });
 
-  if (!gefilterd.length) {
-    el.innerHTML = '<div class="geen-quizzes">Geen quizzes gevonden.</div>';
-    return;
-  }
+  if (!gefilterd.length) { el.innerHTML = '<div class="geen-quizzes">Geen quizzes gevonden.</div>'; return; }
 
   el.innerHTML = '';
   gefilterd.forEach(([id, q]) => {
-    const n = q.vragen ? Object.keys(q.vragen).length : 0;
+    const n   = q.vragen ? Object.keys(q.vragen).length : 0;
     const div = document.createElement('div');
     div.className = 'quiz-item' + (id === actieveQuizId ? ' actief' : '');
     div.innerHTML = `
       <div class="quiz-naam">${q.naam}</div>
       <div class="quiz-meta">
-        <span class="tag">${q.leerjaar}</span>
+        <span class="tag">Jaar ${q.leerjaar}</span>
         <span class="tag groen">${q.niveau}</span>
         <span class="tag paars">${q.onderwerp}</span>
         <span style="color:#475569">${n} vragen</span>
@@ -318,24 +300,20 @@ function renderQuizLijst() {
     el.appendChild(div);
   });
 }
-
 window.filterQuizzes = renderQuizLijst;
 
-// ══════════════════════════════════════════════════════════
-//  Quiz detail scherm
-// ══════════════════════════════════════════════════════════
+// ── Quiz detail ────────────────────────────────────────────
 function toonQuizDetail(quizId) {
   const q      = alleQuizzes[quizId];
   if (!q) return;
   const vragen = q.vragen ? Object.entries(q.vragen) : [];
 
-  const main = document.getElementById('main');
-  main.innerHTML = `
+  document.getElementById('main').innerHTML = `
     <div class="quiz-detail">
       <div class="quiz-detail-header">
         <h2>${q.naam}</h2>
         <div class="quiz-detail-meta">
-          <span class="tag">${q.leerjaar}</span>
+          <span class="tag">Jaar ${q.leerjaar}</span>
           <span class="tag groen">${q.niveau}</span>
           <span class="tag paars">${q.onderwerp}</span>
         </div>
@@ -346,15 +324,12 @@ function toonQuizDetail(quizId) {
         </div>
       </div>
       <div class="quiz-content">
-        <div class="vraag-sectie-titel">
-          <span>VRAGEN</span>
-          <span style="color:#475569">${vragen.length}</span>
-        </div>
+        <div class="vraag-sectie-titel"><span>VRAGEN</span><span style="color:#475569">${vragen.length}</span></div>
         <div id="vraag-lijst-detail">
           ${vragen.length === 0 ? '<p style="color:#475569;font-size:.88em;">Nog geen vragen. Voeg er een toe hieronder.</p>' : ''}
           ${vragen.map(([vid, v], i) => renderVraagRij(quizId, vid, v, i)).join('')}
         </div>
-        <div class="nieuwe-vraag-form" id="nieuw-vraag-form">
+        <div class="nieuwe-vraag-form">
           <div style="font-size:.82em;color:#64748b;margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">+ Nieuwe vraag</div>
           <div class="form-rij">
             <div>
@@ -382,6 +357,10 @@ function toonQuizDetail(quizId) {
                 </div>`).join('')}
             </div>
           </div>
+          <div id="nv-open-veld" style="display:none">
+            <label class="form-label">Goede antwoorden / sleutelwoorden <span style="color:#475569">(kommagescheiden — antwoord hoeft er maar één te bevatten)</span></label>
+            <input class="form-inp" id="nv-sleutelwoorden" placeholder="Bijv: oxidatie, oxideren, geoxideerd">
+          </div>
           <div class="form-acties">
             <button class="btn btn-blauw" onclick="vraagToevoegen('${quizId}')">+ Toevoegen</button>
           </div>
@@ -392,35 +371,37 @@ function toonQuizDetail(quizId) {
 
 function renderVraagRij(quizId, vraagId, v, i) {
   const badge = v.type === 'mc' ? '<span class="mc-badge">MC</span>' : '<span class="open-badge">Open</span>';
-  let opties = '';
+  let extra = '';
   if (v.type === 'mc' && v.opties) {
     const letters = ['A','B','C','D'];
-    opties = '<div class="vraag-rij-opties">' +
+    extra = '<div class="vraag-rij-opties">' +
       v.opties.map((o, idx) => {
         const l = letters[idx];
-        const isJuist = v.juist === l;
-        return `<span class="optie-chip${isJuist?' juist':''}">${l}: ${o}</span>`;
+        return `<span class="optie-chip${v.juist===l?' juist':''}">${l}: ${o}</span>`;
       }).join('') + '</div>';
+  }
+  if (v.type === 'open' && v.sleutelwoorden) {
+    const kws = v.sleutelwoorden.split(',').map(k => k.trim()).filter(k => k);
+    extra = '<div class="sleutel-chips">' + kws.map(k => `<span class="sleutel-chip">🔑 ${k}</span>`).join('') + '</div>';
   }
   return `<div class="vraag-rij">
     <div class="vraag-rij-nr">${i+1}</div>
     <div class="vraag-rij-body">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">${badge}<span style="font-size:.72em;color:#475569">${v.tags?.onderwerp || ''}</span></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">${badge}</div>
       <div class="vraag-rij-tekst">${v.tekst}</div>
-      ${opties}
+      ${extra}
     </div>
-    <div class="vraag-rij-acties">
+    <div style="display:flex;gap:6px;flex-shrink:0;">
       <button class="btn btn-rood" style="padding:4px 8px;font-size:.78em;" onclick="vraagVerwijderen('${quizId}','${vraagId}')">✕</button>
     </div>
   </div>`;
 }
 
-// ══════════════════════════════════════════════════════════
-//  Vraag toevoegen
-// ══════════════════════════════════════════════════════════
+// ── Vraag formulier ────────────────────────────────────────
 window.toggleNvType = function() {
   const type = document.getElementById('nv-type').value;
-  document.getElementById('nv-mc-veld').style.display = type === 'mc' ? '' : 'none';
+  document.getElementById('nv-mc-veld').style.display   = type === 'mc'   ? '' : 'none';
+  document.getElementById('nv-open-veld').style.display = type === 'open' ? '' : 'none';
 };
 
 window.vraagToevoegen = async function(quizId) {
@@ -430,7 +411,6 @@ window.vraagToevoegen = async function(quizId) {
 
   const quiz = alleQuizzes[quizId];
   const tags = { leerjaar: quiz.leerjaar, niveau: quiz.niveau, onderwerp: quiz.onderwerp };
-
   const vraag = { type, tekst, tags, quizId, quizNaam: quiz.naam };
 
   if (type === 'mc') {
@@ -439,17 +419,19 @@ window.vraagToevoegen = async function(quizId) {
     const juist = document.querySelector('input[name=nv-juist]:checked');
     vraag.opties = opties;
     vraag.juist  = juist ? juist.value : null;
+  } else {
+    vraag.sleutelwoorden = document.getElementById('nv-sleutelwoorden').value.trim();
   }
 
-  // Opslaan in quiz én vragenbank
   const nieuwRef = push(ref(db, `quizzes/${quizId}/vragen`));
   await set(nieuwRef, vraag);
   await set(ref(db, `vragenbank/${nieuwRef.key}`), vraag);
 
-  // Reset formulier
   document.getElementById('nv-tekst').value = '';
   document.querySelectorAll('.nv-opt').forEach(i => i.value = '');
   document.querySelectorAll('input[name=nv-juist]').forEach(r => r.checked = false);
+  if (document.getElementById('nv-sleutelwoorden'))
+    document.getElementById('nv-sleutelwoorden').value = '';
 };
 
 window.vraagVerwijderen = async function(quizId, vraagId) {
@@ -458,9 +440,7 @@ window.vraagVerwijderen = async function(quizId, vraagId) {
   await remove(ref(db, `vragenbank/${vraagId}`));
 };
 
-// ══════════════════════════════════════════════════════════
-//  Quiz aanmaken / bewerken / verwijderen
-// ══════════════════════════════════════════════════════════
+// ── Quiz beheer ────────────────────────────────────────────
 let bewerkQuizId = null;
 
 window.openNieuweQuizModal = function() {
@@ -488,57 +468,51 @@ window.slaQuizOp = async function() {
   const niveau    = document.getElementById('modal-niveau').value;
   const onderwerp = document.getElementById('modal-onderwerp').value.trim();
   if (!naam || !onderwerp) { alert('Vul naam en onderwerp in.'); return; }
-
   if (bewerkQuizId) {
     await update(ref(db, `quizzes/${bewerkQuizId}`), { naam, leerjaar, niveau, onderwerp });
   } else {
     const newRef = push(ref(db, 'quizzes'));
-    await set(newRef, { naam, leerjaar, niveau, onderwerp, vragen: {} });
+    await set(newRef, { naam, leerjaar, niveau, onderwerp });
     actieveQuizId = newRef.key;
   }
   sluitModal('modal-quiz');
 };
 
 window.verwijderQuiz = async function(quizId) {
-  if (!confirm('Quiz en alle bijbehorende vragen verwijderen?')) return;
-  // Verwijder ook uit vragenbank
+  if (!confirm('Quiz en alle vragen verwijderen?')) return;
   const q = alleQuizzes[quizId];
   if (q?.vragen) {
-    for (const vid of Object.keys(q.vragen)) {
-      await remove(ref(db, `vragenbank/${vid}`));
-    }
+    for (const vid of Object.keys(q.vragen)) await remove(ref(db, `vragenbank/${vid}`));
   }
   await remove(ref(db, `quizzes/${quizId}`));
   actieveQuizId = null;
-  document.getElementById('main').innerHTML = `
-    <div class="leeg-scherm"><div class="icon">📚</div><p>Selecteer een quiz of maak een nieuwe aan</p></div>`;
+  document.getElementById('main').innerHTML = `<div class="leeg-scherm"><div class="icon">📚</div><p>Selecteer een quiz of maak een nieuwe aan</p></div>`;
 };
 
-window.sluitModal = function(id) {
-  document.getElementById(id).style.display = 'none';
-};
+window.sluitModal = function(id) { document.getElementById(id).style.display = 'none'; };
 
-// ══════════════════════════════════════════════════════════
-//  Sessie starten
-// ══════════════════════════════════════════════════════════
+// ── Sessie starten ─────────────────────────────────────────
 window.startQuiz = async function(quizId) {
   const quiz   = alleQuizzes[quizId];
   const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
-  if (!vragen.length) { alert('Deze quiz heeft nog geen vragen.'); return; }
+  if (!vragen.length) { alert('Geen vragen in deze quiz.'); return; }
 
   actieveQuizId  = quizId;
   sessieActief   = true;
   sessieVraagIdx = 0;
+  huidigeFase    = 'vraag';
 
   await remove(ref(db, 'antwoorden'));
+  await remove(ref(db, 'scores'));
   await set(ref(db, 'sessie'), {
     actief: true, quizId, quizNaam: quiz.naam,
-    vraagIdx: 0, vraag: vragen[0]
+    vraagIdx: 0, vraag: vragen[0], fase: 'vraag'
   });
 
   toonSessieScherm(quizId, 0);
 };
 
+// ── Sessie scherm ──────────────────────────────────────────
 function toonSessieScherm(quizId, idx) {
   const quiz   = alleQuizzes[quizId];
   const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
@@ -553,17 +527,23 @@ function toonSessieScherm(quizId, idx) {
         const l = letters[i];
         return `<div class="mc-blok ${l}${v.juist===l?' juist':''}"><span class="ltr">${l}</span>${o}</div>`;
       }).join('') + '</div>';
+  } else if (v.sleutelwoorden) {
+    const kws = v.sleutelwoorden.split(',').map(k => k.trim()).filter(k => k);
+    vraagHTML = '<div class="sleutel-chips" style="margin-top:0">' + kws.map(k => `<span class="sleutel-chip">🔑 ${k}</span>`).join('') + '</div>';
   }
+
+  const isLaatste = idx + 1 >= totaal;
 
   document.getElementById('main').innerHTML = `
     <div class="sessie-scherm">
       <div class="sessie-header">
         <h2>🎓 ${quiz.naam}</h2>
-        <span class="voortgang">Vraag ${idx+1} van ${totaal}</span>
-        <div style="margin-left:auto;display:flex;gap:8px;">
-          ${idx + 1 < totaal
-            ? `<button class="btn btn-blauw" onclick="volgendeVraag('${quizId}',${idx+1})">Volgende vraag →</button>`
-            : `<button class="btn btn-oranje" onclick="eindeQuiz('${quizId}')">Quiz afronden ✓</button>`}
+        <span class="voortgang">Vraag ${idx+1} / ${totaal}</span>
+        <div class="sessie-knoppen">
+          <button class="btn btn-paars" id="btn-toon-resultaten" onclick="toonResultaten('${quizId}',${idx})">📊 Toon resultaten</button>
+          ${isLaatste
+            ? `<button class="btn btn-oranje" id="btn-volgende" onclick="eindeQuiz('${quizId}')" disabled>✓ Afronden</button>`
+            : `<button class="btn btn-blauw"  id="btn-volgende" onclick="volgendeVraag('${quizId}',${idx+1})" disabled>Volgende →</button>`}
           <button class="btn btn-rood" onclick="stopSessie('${quizId}')">⏹ Stop</button>
         </div>
       </div>
@@ -574,61 +554,103 @@ function toonSessieScherm(quizId, idx) {
             <h3>${v.tekst}</h3>
             ${vraagHTML}
           </div>
+          <div class="stats-kaart">
+            <h4>Antwoorden</h4>
+            <div id="sessie-stats"><em style="color:#475569;font-size:.85em">Wachten op antwoorden…</em></div>
+          </div>
         </div>
         <div class="sessie-rechts">
           <div class="deelnemers-info">
             <div class="deeln-getal" id="sessie-deeln-teller">0</div>
             <div class="deeln-lbl">leerlingen online</div>
           </div>
-          <div class="stats-kaart">
-            <h4>Antwoorden</h4>
-            <div id="sessie-stats"><em style="color:#475569;font-size:.85em">Wachten…</em></div>
+          <div class="score-bord-mini">
+            <h4>Klassement</h4>
+            <div id="scores-mini"><em style="color:#475569;font-size:.82em">Nog geen scores</em></div>
           </div>
         </div>
       </div>
     </div>`;
 
-  // Bind deelnemers live ook in sessie
   onValue(ref(db, 'deelnemers'), snap => {
     const el = document.getElementById('sessie-deeln-teller');
     if (el) el.textContent = snap.exists() ? Object.keys(snap.val()).length : 0;
   });
 }
 
+// ── Resultaten tonen + nakijken ────────────────────────────
+window.toonResultaten = async function(quizId, idx) {
+  const quiz   = alleQuizzes[quizId];
+  const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
+  const vraag  = vragen[idx];
+
+  const snap = await get(ref(db, 'antwoorden'));
+  const antwoorden = snap.exists() ? snap.val() : {};
+
+  // Nakijken en scores bijwerken
+  for (const [leerlingId, a] of Object.entries(antwoorden)) {
+    let correct = false;
+    if (vraag.type === 'mc') {
+      correct = a.antwoord === vraag.juist;
+    } else {
+      const kws  = (vraag.sleutelwoorden || '').split(',').map(k => k.trim().toLowerCase()).filter(k => k);
+      const antw = a.antwoord.toLowerCase();
+      correct = kws.length > 0 && kws.some(k => antw.includes(k));
+    }
+    await update(ref(db, `antwoorden/${leerlingId}`), { correct });
+
+    const scoreSnap = await get(ref(db, `scores/${leerlingId}`));
+    const oud = scoreSnap.exists() ? (scoreSnap.val().punten || 0) : 0;
+    await set(ref(db, `scores/${leerlingId}`), { naam: a.naam, punten: correct ? oud + 1 : oud });
+  }
+
+  // Fase bijwerken → scorebord en leerlingen zien resultaat
+  await update(ref(db, 'sessie'), { fase: 'resultaten' });
+  huidigeFase = 'resultaten';
+
+  // Volgende knop activeren
+  const btnVolgende = document.getElementById('btn-volgende');
+  if (btnVolgende) btnVolgende.disabled = false;
+  const btnToon = document.getElementById('btn-toon-resultaten');
+  if (btnToon) btnToon.disabled = true;
+};
+
+// ── Volgende vraag ─────────────────────────────────────────
 window.volgendeVraag = async function(quizId, idx) {
   const quiz   = alleQuizzes[quizId];
   const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
   sessieVraagIdx = idx;
+  huidigeFase    = 'vraag';
   await remove(ref(db, 'antwoorden'));
-  await update(ref(db, 'sessie'), { vraagIdx: idx, vraag: vragen[idx] });
+  await update(ref(db, 'sessie'), { vraagIdx: idx, vraag: vragen[idx], fase: 'vraag' });
   toonSessieScherm(quizId, idx);
 };
 
 window.eindeQuiz = async function(quizId) {
-  await set(ref(db, 'sessie/actief'), false);
+  await update(ref(db, 'sessie'), { actief: false, fase: 'einde' });
   sessieActief = false;
-  alert('Quiz afgerond! Resultaten zijn exporteerbaar via de knop rechtsboven.');
+  alert('Quiz afgerond! Bekijk het eindklassement op het scorebord.');
   toonQuizDetail(quizId);
 };
 
 window.stopSessie = async function(quizId) {
   if (!confirm('Sessie stoppen?')) return;
-  await set(ref(db, 'sessie/actief'), false);
+  await update(ref(db, 'sessie'), { actief: false, fase: 'wachten' });
   sessieActief = false;
   toonQuizDetail(quizId);
 };
 
-// ══════════════════════════════════════════════════════════
-//  Statistieken
-// ══════════════════════════════════════════════════════════
+// ── Live stats weergave ────────────────────────────────────
 function toonSessieStats(data, vraag) {
   const el = document.getElementById('sessie-stats');
   if (!el) return;
   const antwoorden = Object.values(data);
   if (!antwoorden.length) { el.innerHTML = '<em style="color:#475569;font-size:.85em">Wachten…</em>'; return; }
 
+  const nagekeken = antwoorden.some(a => a.correct !== undefined);
+
   if (vraag.type === 'mc') {
-    const tl = {}; const letters = ['A','B','C','D'];
+    const tl = {}, letters = ['A','B','C','D'];
     vraag.opties.forEach((_, i) => tl[letters[i]] = 0);
     antwoorden.forEach(a => { if (tl[a.antwoord] !== undefined) tl[a.antwoord]++; });
     const kleuren = { A:'#ef4444', B:'#f97316', C:'#22c55e', D:'#3b82f6' };
@@ -643,40 +665,61 @@ function toonSessieStats(data, vraag) {
       </div>`;
     });
     html += '</div>';
-    if (vraag.juist) {
+    if (nagekeken && vraag.juist) {
       const goedN = tl[vraag.juist] || 0;
       const pct   = Math.round(goedN / antwoorden.length * 100);
-      html += `<div class="score-info">✅ <strong style="color:#22c55e">${pct}%</strong> goed · ❌ <strong style="color:#ef4444">${100-pct}%</strong> fout</div>`;
+      html += `<div class="score-info">✅ <strong style="color:#22c55e">${pct}%</strong> goed &nbsp;❌ <strong style="color:#ef4444">${100-pct}%</strong> fout</div>`;
     }
     html += `<div style="margin-top:8px;font-size:.8em;color:#475569">Totaal: ${antwoorden.length}</div>`;
     el.innerHTML = html;
   } else {
     let html = '<div class="open-antw-lijst">';
     antwoorden.forEach(a => {
-      html += `<div class="open-antw-item"><div class="open-antw-naam">${a.naam || 'Anoniem'}</div>${a.antwoord}</div>`;
+      const cls   = nagekeken ? (a.correct ? 'goed' : 'fout') : '';
+      const icoon = nagekeken ? (a.correct ? '✅' : '❌') : '💬';
+      html += `<div class="open-antw-item ${cls}">
+        <span class="open-antw-correct">${icoon}</span>
+        <div><div class="open-antw-naam">${a.naam||'Anoniem'}</div>${a.antwoord}</div>
+      </div>`;
     });
     html += `</div><div style="margin-top:8px;font-size:.8em;color:#475569">Totaal: ${antwoorden.length}</div>`;
+    if (nagekeken) {
+      const goedN = antwoorden.filter(a => a.correct).length;
+      const pct   = Math.round(goedN / antwoorden.length * 100);
+      html += `<div class="score-info">✅ <strong style="color:#22c55e">${pct}%</strong> goed &nbsp;❌ <strong style="color:#ef4444">${100-pct}%</strong> fout</div>`;
+    }
     el.innerHTML = html;
   }
 }
 
-// ══════════════════════════════════════════════════════════
-//  Export
-// ══════════════════════════════════════════════════════════
+function toonScoresMini(scores) {
+  const el = document.getElementById('scores-mini');
+  if (!el) return;
+  const gesorteerd = Object.values(scores).sort((a, b) => b.punten - a.punten).slice(0, 8);
+  if (!gesorteerd.length) { el.innerHTML = '<em style="color:#475569;font-size:.82em">Nog geen scores</em>'; return; }
+  const medals = ['🥇','🥈','🥉'];
+  el.innerHTML = gesorteerd.map((s, i) => `
+    <div class="score-rij">
+      <div class="score-pos">${medals[i] || i+1}</div>
+      <div class="score-naam">${s.naam}</div>
+      <div class="score-punten">${s.punten}</div>
+    </div>`).join('');
+}
+
+// ── Export ─────────────────────────────────────────────────
 window.exporteerData = async function() {
   const snap = await get(ref(db, 'antwoorden'));
   const antw = snap.exists() ? Object.values(snap.val()) : [];
   if (!antw.length) { alert('Geen antwoorden om te exporteren.'); return; }
-  let csv = 'Naam,Antwoord,Tijdstip\n';
+  let csv = 'Naam,Antwoord,Correct,Tijdstip\n';
   antw.forEach(a => {
     const t = a.tijdstip ? new Date(a.tijdstip).toLocaleTimeString('nl-NL') : '';
-    csv += `"${a.naam||''}","${a.antwoord}","${t}"\n`;
+    const c = a.correct === true ? 'Ja' : a.correct === false ? 'Nee' : '';
+    csv += `"${a.naam||''}","${a.antwoord}","${c}","${t}"\n`;
   });
   const blob = new Blob([csv], { type: 'text/csv' });
   const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'antwoorden.csv';
-  link.click();
+  link.href = URL.createObjectURL(blob); link.download = 'antwoorden.csv'; link.click();
 };
 </script>
 </body>

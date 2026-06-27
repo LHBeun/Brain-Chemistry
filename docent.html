@@ -438,7 +438,10 @@ function renderVraagRij(quizId, vraagId, v, i) {
       <div class="vraag-rij-tekst">${v.tekst}</div>
       ${extra}
     </div>
-    <button class="btn btn-rood" style="padding:4px 8px;font-size:.78em;flex-shrink:0;" onclick="vraagVerwijderen('${quizId}','${vraagId}')">✕</button>
+    <div style="display:flex;gap:4px;flex-shrink:0;">
+      <button class="btn btn-grijs" style="padding:4px 8px;font-size:.78em;" onclick="vraagBewerkStart('${quizId}','${vraagId}')">✏</button>
+      <button class="btn btn-rood"  style="padding:4px 8px;font-size:.78em;" onclick="vraagVerwijderen('${quizId}','${vraagId}')">✕</button>
+    </div>
   </div>`;
 }
 
@@ -464,8 +467,8 @@ function renderNieuwVraagForm(quizId) {
       </div>
     </div>
     <div id="nv-type-veld"></div>
-    <div class="form-acties">
-      <button class="btn btn-blauw" onclick="vraagToevoegen('${quizId}')">+ Toevoegen</button>
+    <div class="form-acties" id="nv-acties">
+      <button class="btn btn-blauw" id="nv-opslaan-btn" onclick="vraagToevoegen('${quizId}')">+ Toevoegen</button>
     </div>
   </div>`;
 }
@@ -550,6 +553,58 @@ window.nvVoegItemToe    = () => { nvState.items.push(''); renderNvVeld(); };
 window.nvVerwijderItem  = i => { nvState.items.splice(i, 1); renderNvVeld(); };
 
 // ── Vraag toevoegen ──
+let bewerkVraagId = null;
+
+window.vraagBewerkStart = function(quizId, vraagId) {
+  const v = alleQuizzes[quizId]?.vragen?.[vraagId];
+  if (!v) return;
+  bewerkVraagId = vraagId;
+
+  // Vul nvState vanuit bestaande vraag
+  nvState.type    = v.type;
+  nvState.opties  = v.opties ? [...v.opties] : ['','',''];
+  nvState.correct = v.juist  ? (Array.isArray(v.juist) ? [...v.juist] : [v.juist]) : [];
+  nvState.paren   = v.paren  ? v.paren.map(p => ({l:p.l, r:p.r})) : [{l:'',r:''},{l:'',r:''}];
+  nvState.items   = v.items  ? [...v.items] : ['','',''];
+
+  // Pas type-select aan
+  const typeEl = document.getElementById('nv-type');
+  if (typeEl) { typeEl.value = v.type; }
+
+  // Vul vraagveld
+  const tekstEl = document.getElementById('nv-tekst');
+  if (tekstEl) tekstEl.value = v.tekst || '';
+
+  renderNvVeld();
+
+  // Sleutelwoorden voor open vraag
+  if (v.type === 'open') {
+    const kwEl = document.getElementById('nv-sleutelwoorden');
+    if (kwEl) kwEl.value = v.sleutelwoorden || '';
+  }
+
+  // Knop naar "Opslaan" + annuleerknop
+  const actiesEl = document.getElementById('nv-acties');
+  if (actiesEl) {
+    actiesEl.innerHTML = `
+      <button class="btn btn-grijs" onclick="vraagBewerkAnnuleer('${quizId}')">Annuleren</button>
+      <button class="btn btn-blauw" onclick="vraagToevoegen('${quizId}')">💾 Opslaan</button>`;
+  }
+
+  // Scroll naar formulier
+  document.getElementById('nv-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+window.vraagBewerkAnnuleer = function(quizId) {
+  bewerkVraagId = null;
+  nvState = { type: 'mc', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
+  document.getElementById('nv-type').value = 'mc';
+  document.getElementById('nv-tekst').value = '';
+  renderNvVeld();
+  document.getElementById('nv-acties').innerHTML =
+    `<button class="btn btn-blauw" id="nv-opslaan-btn" onclick="vraagToevoegen('${quizId}')">+ Toevoegen</button>`;
+};
+
 window.vraagToevoegen = async function(quizId) {
   const type  = nvState.type;
   const tekst = document.getElementById('nv-tekst').value.trim();
@@ -582,9 +637,17 @@ window.vraagToevoegen = async function(quizId) {
     vraag.sleutelwoorden = document.getElementById('nv-sleutelwoorden')?.value.trim() || '';
   }
 
-  const nieuwRef = push(ref(db, `quizzes/${quizId}/vragen`));
-  await set(nieuwRef, vraag);
-  await set(ref(db, `vragenbank/${nieuwRef.key}`), vraag);
+  if (bewerkVraagId) {
+    // Bewerk bestaande vraag
+    await set(ref(db, `quizzes/${quizId}/vragen/${bewerkVraagId}`), vraag);
+    await set(ref(db, `vragenbank/${bewerkVraagId}`), vraag);
+    bewerkVraagId = null;
+  } else {
+    // Nieuwe vraag aanmaken
+    const nieuwRef = push(ref(db, `quizzes/${quizId}/vragen`));
+    await set(nieuwRef, vraag);
+    await set(ref(db, `vragenbank/${nieuwRef.key}`), vraag);
+  }
 
   document.getElementById('nv-tekst').value = '';
   nvState = { type, opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };

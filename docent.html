@@ -89,7 +89,7 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
 
 .opt-rij, .match-rij, .item-rij { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
 .opt-letter { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .82em; flex-shrink: 0; }
-.opt-letter.A{background:#ef4444} .opt-letter.B{background:#f97316} .opt-letter.C{background:#22c55e;color:#0f172a} .opt-letter.D{background:#3b82f6} .opt-letter.E{background:#a855f7} .opt-letter.F{background:#06b6d4}
+.opt-letter.A{background:#ef4444} .opt-letter.B{background:#000000;border:1px solid #475569} .opt-letter.C{background:#eab308;color:#0f172a} .opt-letter.D{background:#3b82f6} .opt-letter.E{background:#a855f7} .opt-letter.F{background:#f97316}
 .juist-check { cursor: pointer; width: 15px; height: 15px; flex-shrink: 0; accent-color: #22c55e; }
 .item-nr { width: 20px; color: #64748b; font-size: .85em; text-align: center; flex-shrink: 0; }
 .match-pijl { color: #475569; flex-shrink: 0; }
@@ -111,7 +111,7 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
 .actieve-vraag-kaart h3 { font-size: 1.2em; line-height: 1.4; margin-bottom: 18px; }
 .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .mc-blok { border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 8px; font-size: .9em; font-weight: 600; }
-.mc-blok.A{background:#7f1d1d} .mc-blok.B{background:#7c2d12} .mc-blok.C{background:#14532d} .mc-blok.D{background:#1e3a5f} .mc-blok.E{background:#3b0764} .mc-blok.F{background:#164e63}
+.mc-blok.A{background:#7f1d1d} .mc-blok.B{background:#111111;border:1px solid #475569} .mc-blok.C{background:#78350f} .mc-blok.D{background:#1e3a5f} .mc-blok.E{background:#3b0764} .mc-blok.F{background:#7c2d12}
 .mc-blok.juist { outline: 3px solid #22c55e; }
 .mc-blok .ltr { font-size: 1.1em; font-weight: 800; }
 .match-display { display: flex; flex-direction: column; gap: 8px; }
@@ -293,7 +293,8 @@ const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
 const LETTERS = ['A','B','C','D','E','F'];
-const KLEUR_MAP = { A:'#ef4444', B:'#f97316', C:'#22c55e', D:'#3b82f6', E:'#a855f7', F:'#06b6d4' };
+const KLEUR_MAP = { A:'#ef4444', B:'#000000', C:'#eab308', D:'#3b82f6', E:'#a855f7', F:'#f97316' };
+const KLEUR_TEKST_MAP = { A:'#0f172a', B:'#e2e8f0', C:'#0f172a', D:'#0f172a', E:'#0f172a', F:'#0f172a' };
 
 // ── State ──
 let alleQuizzes    = {};
@@ -939,7 +940,7 @@ function toonSessieStats(data, vraag) {
       const pct = Math.round(n / antwoorden.length * 100);
       html += `<div class="balk-rij">
         <div class="balk-lbl">${l}: ${opt}</div>
-        <div class="balk-out"><div class="balk-in" style="width:${pct}%;background:${KLEUR_MAP[l]}">${pct>10?pct+'%':''}</div></div>
+        <div class="balk-out"><div class="balk-in" style="width:${pct}%;background:${KLEUR_MAP[l]};color:${KLEUR_TEKST_MAP[l]}">${pct>10?pct+'%':''}</div></div>
         <div class="balk-cnt">${n}</div>
       </div>`;
     });

@@ -28,8 +28,8 @@ header h1 { font-size: 1.3em; color: #38bdf8; }
 
 .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .mc-blok { border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; font-size: 1em; font-weight: 600; }
-.mc-blok.A{background:#7f1d1d} .mc-blok.B{background:#7c2d12} .mc-blok.C{background:#14532d} .mc-blok.D{background:#1e3a5f}
-.mc-blok.E{background:#581c87} .mc-blok.F{background:#831843}
+.mc-blok.A{background:#7f1d1d} .mc-blok.B{background:#111111;border:1px solid #475569} .mc-blok.C{background:#78350f} .mc-blok.D{background:#1e3a5f}
+.mc-blok.E{background:#581c87} .mc-blok.F{background:#7c2d12}
 .mc-blok.juist { outline: 3px solid #22c55e; }
 .mc-blok .ltr { font-size: 1.2em; font-weight: 800; }
 
@@ -216,7 +216,8 @@ function renderLinks() {
   document.getElementById('hdr-voortgang').textContent = `Vraag ${idx + 1}`;
 
   const LETTERS = ['A','B','C','D','E','F'];
-  const KLEUREN_MC = { A:'#ef4444', B:'#f97316', C:'#22c55e', D:'#3b82f6', E:'#a855f7', F:'#ec4899' };
+  const KLEUREN_MC = { A:'#ef4444', B:'#000000', C:'#eab308', D:'#3b82f6', E:'#a855f7', F:'#f97316' };
+  const KLEUREN_MC_TEKST = { A:'#0f172a', B:'#e2e8f0', C:'#0f172a', D:'#0f172a', E:'#0f172a', F:'#0f172a' };
   const TYPE_LABELS = { mc:'Meerkeuze', 'mc-multi':'Meerkeuze (meerdere)', matching:'Koppelen', sorteren:'Sorteren', open:'Open vraag' };
 
   // Vraagweergave
@@ -277,7 +278,7 @@ function renderLinks() {
             const p = Math.round(n / antw.length * 100);
             return `<div class="balk-rij">
               <div class="balk-lbl">${l}: ${opt}</div>
-              <div class="balk-out"><div class="balk-in" style="width:${p}%;background:${KLEUREN_MC[l]}">${p>8?p+'%':''}</div></div>
+              <div class="balk-out"><div class="balk-in" style="width:${p}%;background:${KLEUREN_MC[l]};color:${KLEUREN_MC_TEKST[l]}">${p>8?p+'%':''}</div></div>
               <div class="balk-cnt">${n}</div>
             </div>`;
           }).join('')}

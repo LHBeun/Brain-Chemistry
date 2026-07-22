@@ -185,26 +185,6 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
     <button onclick="wwControle()" style="width:100%;padding:12px;border:none;border-radius:10px;background:#38bdf8;color:#0f172a;font-size:1em;font-weight:700;cursor:pointer;">Inloggen</button>
   </div>
 </div>
-<script>
-(function() {
-  const WW = 'scheikunde';  // ← verander dit naar jouw wachtwoord
-  const KEY = 'bc_docent_auth';
-  const opgeslagen = localStorage.getItem(KEY);
-  if (opgeslagen && Date.now() - parseInt(opgeslagen) < 86400000) {
-    document.getElementById('ww-overlay').style.display = 'none';
-  }
-  window.wwControle = function() {
-    if (document.getElementById('ww-input').value === WW) {
-      localStorage.setItem(KEY, Date.now());
-      document.getElementById('ww-overlay').style.display = 'none';
-    } else {
-      document.getElementById('ww-fout').textContent = 'Onjuist wachtwoord';
-      document.getElementById('ww-input').value = '';
-      document.getElementById('ww-input').focus();
-    }
-  };
-})();
-</script>
 
 <header>
   <h1>🧪 Brain Chemistry</h1>
@@ -279,6 +259,8 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { getDatabase, ref, set, push, onValue, remove, get, update }
     from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+    from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCmCeuVZr888XzPkfX5MrQ8xxZ96ttaIsQ",
@@ -291,6 +273,31 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
+const auth = getAuth(app);
+
+// ── Echte docent-login i.p.v. het oude localStorage-wachtwoordveld ──
+const DOCENT_EMAIL = 'docent@brainchemistry.local'; // pas aan indien gewenst
+
+window.wwControle = function() {
+  const ww = document.getElementById('ww-input').value;
+  signInWithEmailAndPassword(auth, DOCENT_EMAIL, ww)
+    .then(() => {
+      document.getElementById('ww-overlay').style.display = 'none';
+    })
+    .catch(() => {
+      document.getElementById('ww-fout').textContent = 'Onjuist wachtwoord';
+      document.getElementById('ww-input').value = '';
+      document.getElementById('ww-input').focus();
+    });
+};
+
+onAuthStateChanged(auth, user => {
+  if (user && user.email === DOCENT_EMAIL) {
+    document.getElementById('ww-overlay').style.display = 'none';
+  } else {
+    document.getElementById('ww-overlay').style.display = 'flex';
+  }
+});
 
 const LETTERS = ['A','B','C','D','E','F'];
 const KLEUR_MAP = { A:'#ef4444', B:'#000000', C:'#eab308', D:'#3b82f6', E:'#a855f7', F:'#f97316' };

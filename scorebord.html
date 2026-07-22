@@ -167,30 +167,37 @@ window.wwControle = function() {
     });
 };
 
+let huidigeSessie = null;
+let huidigeAntwoorden = {};
+let listenersGestart = false;
+
 onAuthStateChanged(auth, user => {
   if (user && user.email === DOCENT_EMAIL) {
     document.getElementById('ww-overlay').style.display = 'none';
+    if (!listenersGestart) {
+      listenersGestart = true;
+      startListeners();
+    }
   } else {
     document.getElementById('ww-overlay').style.display = 'flex';
   }
 });
 
-let huidigeSessie = null;
-let huidigeAntwoorden = {};
+function startListeners() {
+  onValue(ref(db, 'sessie'), snap => {
+    huidigeSessie = snap.exists() ? snap.val() : null;
+    renderLinks();
+  });
 
-onValue(ref(db, 'sessie'), snap => {
-  huidigeSessie = snap.exists() ? snap.val() : null;
-  renderLinks();
-});
+  onValue(ref(db, 'antwoorden'), snap => {
+    huidigeAntwoorden = snap.exists() ? snap.val() : {};
+    renderLinks();
+  });
 
-onValue(ref(db, 'antwoorden'), snap => {
-  huidigeAntwoorden = snap.exists() ? snap.val() : {};
-  renderLinks();
-});
-
-onValue(ref(db, 'scores'), snap => {
-  renderKlassement(snap.exists() ? snap.val() : {});
-});
+  onValue(ref(db, 'scores'), snap => {
+    renderKlassement(snap.exists() ? snap.val() : {});
+  });
+}
 
 function renderLinks() {
   const s = huidigeSessie;

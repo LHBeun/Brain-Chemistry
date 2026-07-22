@@ -108,26 +108,6 @@ header h1 { font-size: 1.3em; color: #38bdf8; }
     <button onclick="wwControle()" style="width:100%;padding:12px;border:none;border-radius:10px;background:#38bdf8;color:#0f172a;font-size:1em;font-weight:700;cursor:pointer;">Inloggen</button>
   </div>
 </div>
-<script>
-(function() {
-  const WW = 'scheikunde';  // ← zelfde wachtwoord als in docent.html
-  const KEY = 'bc_docent_auth';
-  const opgeslagen = localStorage.getItem(KEY);
-  if (opgeslagen && Date.now() - parseInt(opgeslagen) < 86400000) {
-    document.getElementById('ww-overlay').style.display = 'none';
-  }
-  window.wwControle = function() {
-    if (document.getElementById('ww-input').value === WW) {
-      localStorage.setItem(KEY, Date.now());
-      document.getElementById('ww-overlay').style.display = 'none';
-    } else {
-      document.getElementById('ww-fout').textContent = 'Onjuist wachtwoord';
-      document.getElementById('ww-input').value = '';
-      document.getElementById('ww-input').focus();
-    }
-  };
-})();
-</script>
 
 <header>
   <h1>🧪 Brain Chemistry</h1>
@@ -153,6 +133,8 @@ header h1 { font-size: 1.3em; color: #38bdf8; }
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCmCeuVZr888XzPkfX5MrQ8xxZ96ttaIsQ",
@@ -165,6 +147,33 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
+const auth = getAuth(app);
+
+// ── Echte docent-login i.p.v. het oude localStorage-wachtwoordveld ──
+// Het scorebord leest dezelfde brede data als de docentapp, dus het logt ook
+// in als het docentaccount (zelfde wachtwoord als docent.html).
+const DOCENT_EMAIL = 'docent@brainchemistry.local'; // moet gelijk zijn aan docent.html
+
+window.wwControle = function() {
+  const ww = document.getElementById('ww-input').value;
+  signInWithEmailAndPassword(auth, DOCENT_EMAIL, ww)
+    .then(() => {
+      document.getElementById('ww-overlay').style.display = 'none';
+    })
+    .catch(() => {
+      document.getElementById('ww-fout').textContent = 'Onjuist wachtwoord';
+      document.getElementById('ww-input').value = '';
+      document.getElementById('ww-input').focus();
+    });
+};
+
+onAuthStateChanged(auth, user => {
+  if (user && user.email === DOCENT_EMAIL) {
+    document.getElementById('ww-overlay').style.display = 'none';
+  } else {
+    document.getElementById('ww-overlay').style.display = 'flex';
+  }
+});
 
 let huidigeSessie = null;
 let huidigeAntwoorden = {};

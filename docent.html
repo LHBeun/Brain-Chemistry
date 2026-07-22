@@ -291,9 +291,15 @@ window.wwControle = function() {
     });
 };
 
+let listenersGestart = false;
+
 onAuthStateChanged(auth, user => {
   if (user && user.email === DOCENT_EMAIL) {
     document.getElementById('ww-overlay').style.display = 'none';
+    if (!listenersGestart) {
+      listenersGestart = true;
+      startListeners();
+    }
   } else {
     document.getElementById('ww-overlay').style.display = 'flex';
   }
@@ -320,31 +326,33 @@ let nvState = {
   items: ['', '', '']
 };
 
-// ── Firebase listeners ──
-onValue(ref(db, 'quizzes'), snap => {
-  alleQuizzes = snap.exists() ? snap.val() : {};
-  renderQuizLijst();
-  if (actieveQuizId && !sessieActief) toonQuizDetail(actieveQuizId);
-});
+// ── Firebase listeners (pas gestart na bevestigd docent-login) ──
+function startListeners() {
+  onValue(ref(db, 'quizzes'), snap => {
+    alleQuizzes = snap.exists() ? snap.val() : {};
+    renderQuizLijst();
+    if (actieveQuizId && !sessieActief) toonQuizDetail(actieveQuizId);
+  });
 
-onValue(ref(db, 'deelnemers'), snap => {
-  document.getElementById('deeln-teller').textContent = snap.exists() ? Object.keys(snap.val()).length : 0;
-});
+  onValue(ref(db, 'deelnemers'), snap => {
+    document.getElementById('deeln-teller').textContent = snap.exists() ? Object.keys(snap.val()).length : 0;
+  });
 
-onValue(ref(db, 'antwoorden'), snap => {
-  if (!sessieActief) return;
-  const quiz   = alleQuizzes[actieveQuizId];
-  if (!quiz) return;
-  const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
-  const vraag  = vragen[sessieVraagIdx];
-  if (!vraag) return;
-  toonSessieStats(snap.exists() ? snap.val() : {}, vraag);
-});
+  onValue(ref(db, 'antwoorden'), snap => {
+    if (!sessieActief) return;
+    const quiz   = alleQuizzes[actieveQuizId];
+    if (!quiz) return;
+    const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
+    const vraag  = vragen[sessieVraagIdx];
+    if (!vraag) return;
+    toonSessieStats(snap.exists() ? snap.val() : {}, vraag);
+  });
 
-onValue(ref(db, 'scores'), snap => {
-  if (!sessieActief) return;
-  toonScoresMini(snap.exists() ? snap.val() : {});
-});
+  onValue(ref(db, 'scores'), snap => {
+    if (!sessieActief) return;
+    toonScoresMini(snap.exists() ? snap.val() : {});
+  });
+}
 
 // ── Quiz lijst ──
 function renderQuizLijst() {

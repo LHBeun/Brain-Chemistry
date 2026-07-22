@@ -153,6 +153,8 @@ button.grote-knop:disabled { opacity: .4; cursor: not-allowed; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, update }
     from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+import { getAuth, signInAnonymously }
+    from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCmCeuVZr888XzPkfX5MrQ8xxZ96ttaIsQ",
@@ -165,6 +167,8 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
+const auth = getAuth(app);
+await signInAnonymously(auth);
 
 let mijnNaam = '';
 let mijnId   = '';
@@ -183,7 +187,7 @@ window.deelnemen = function() {
   const naam = document.getElementById('naam-input').value.trim();
   if (!naam) { document.getElementById('naam-input').focus(); return; }
   mijnNaam = naam;
-  mijnId   = 'l_' + Math.random().toString(36).slice(2, 9);
+  mijnId   = auth.currentUser.uid;
 
   set(ref(db, 'deelnemers/' + mijnId), { naam });
   document.getElementById('naam-badge').textContent = naam;

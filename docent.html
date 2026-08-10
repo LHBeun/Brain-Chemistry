@@ -349,7 +349,10 @@ function startListeners() {
   });
 
   onValue(ref(db, 'deelnemers'), snap => {
-    document.getElementById('deeln-teller').textContent = snap.exists() ? Object.keys(snap.val()).length : 0;
+    const teller = snap.exists() ? Object.keys(snap.val()).length : 0;
+    document.getElementById('deeln-teller').textContent = teller;
+    const sessieEl = document.getElementById('sessie-deeln');
+    if (sessieEl) sessieEl.textContent = teller;
   });
 
   onValue(ref(db, 'antwoorden'), snap => {
@@ -858,11 +861,6 @@ function toonSessieScherm(quizId, idx) {
         </div>
       </div>
     </div>`;
-
-  onValue(ref(db, 'deelnemers'), snap => {
-    const el = document.getElementById('sessie-deeln');
-    if (el) el.textContent = snap.exists() ? Object.keys(snap.val()).length : 0;
-  });
 }
 
 // ── Resultaten tonen + nakijken ──

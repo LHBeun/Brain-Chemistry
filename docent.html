@@ -520,7 +520,10 @@ function renderNieuwVraagForm(quizId) {
     </div>
     <div id="nv-type-veld"></div>
     <div class="form-acties" id="nv-acties">
-      <button class="btn btn-blauw" id="nv-opslaan-btn" onclick="vraagToevoegen('${quizId}')">+ Toevoegen</button>
+      ${bewerkVraagId
+        ? `<button class="btn btn-grijs" onclick="vraagBewerkAnnuleer('${quizId}')">Annuleren</button>
+           <button class="btn btn-blauw" onclick="vraagToevoegen('${quizId}')">💾 Opslaan</button>`
+        : `<button class="btn btn-blauw" id="nv-opslaan-btn" onclick="vraagToevoegen('${quizId}')">+ Toevoegen</button>`}
     </div>
   </div>`;
 }

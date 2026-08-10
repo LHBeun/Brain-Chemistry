@@ -192,6 +192,7 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
   <div class="hdr-right">
     <div class="verbonden-dot"></div>
     <span class="leerlingen-teller"><span id="deeln-teller">0</span> leerlingen online</span>
+    <button class="btn btn-grijs" style="padding:4px 10px;font-size:.78em;" onclick="opschonenDeelnemers()" title="Verwijder leerlingen die niet meer verbonden zijn (bijv. van eerder testen)">🧹 Opschonen</button>
   </div>
 </header>
 
@@ -956,6 +957,11 @@ window.stopSessie = async function(quizId) {
   await update(ref(db, 'sessie'), { actief: false, fase: 'wachten' });
   sessieActief = false;
   toonQuizDetail(quizId);
+};
+
+window.opschonenDeelnemers = async function() {
+  if (!confirm('Alle huidige "leerlingen online" verwijderen? Gebruik dit als het aantal niet meer klopt (bijv. na eerder testen).')) return;
+  await remove(ref(db, 'deelnemers'));
 };
 
 // ── Live stats ──

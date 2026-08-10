@@ -961,7 +961,13 @@ window.stopSessie = async function(quizId) {
 
 window.opschonenDeelnemers = async function() {
   if (!confirm('Alle huidige "leerlingen online" verwijderen? Gebruik dit als het aantal niet meer klopt (bijv. na eerder testen).')) return;
-  await remove(ref(db, 'deelnemers'));
+  try {
+    await remove(ref(db, 'deelnemers'));
+    alert('✅ Deelnemerslijst opgeschoond.');
+  } catch (err) {
+    console.error('Opschonen mislukt:', err);
+    alert('❌ Opschonen is mislukt: ' + (err?.message || err));
+  }
 };
 
 // ── Live stats ──

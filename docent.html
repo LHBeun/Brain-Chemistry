@@ -318,6 +318,12 @@ let huidigeFase    = 'wachten';
 let huidigeSessieId = null;
 
 // Formulier state
+// LET OP: dit script draait als <script type="module">, dus een module-scoped
+// "let nvState" is NIET zichtbaar voor inline HTML-attributen (oninput="…")
+// — die evalueren altijd in de globale scope. Vandaar dat we hem ook expliciet
+// op window zetten en synchroon houden bij elke herwijzing; de inline
+// oninput-handlers verwijzen daarom naar window.nvState, niet naar het kale
+// "nvState".
 let nvState = {
   type: 'mc',
   tekst: '',
@@ -326,6 +332,7 @@ let nvState = {
   paren: [{ l: '', r: '' }, { l: '', r: '' }],
   items: ['', '', '']
 };
+window.nvState = nvState;
 // Onthoudt voor welke quiz het "nieuwe vraag"-formulier nu staat, zodat een
 // automatische her-render (bijv. door de Firebase-listener hieronder) het
 // formulier niet stiekem leegveegt terwijl iemand middenin het invullen zit —
@@ -435,6 +442,7 @@ function toonQuizDetail(quizId) {
     nvFormQuizId = quizId;
     bewerkVraagId = null;
     nvState = { type: 'mc', tekst: '', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
+    window.nvState = nvState;
   }
   renderNvVeld();
 }
@@ -501,7 +509,7 @@ function renderNieuwVraagForm(quizId) {
     <div class="form-rij enkel">
       <div>
         <label class="form-label">Vraag</label>
-        <textarea class="form-inp" id="nv-tekst" rows="2" placeholder="Typ je vraag…" oninput="nvState.tekst=this.value">${(nvState.tekst||'').replace(/</g,'&lt;')}</textarea>
+        <textarea class="form-inp" id="nv-tekst" rows="2" placeholder="Typ je vraag…" oninput="window.nvState.tekst=this.value">${(nvState.tekst||'').replace(/</g,'&lt;')}</textarea>
       </div>
     </div>
     <div id="nv-type-veld"></div>
@@ -530,7 +538,7 @@ function renderNvVeld() {
       const l = LETTERS[i];
       html += `<div class="opt-rij">
         <div class="opt-letter ${l}">${l}</div>
-        <input class="form-inp" value="${opt.replace(/"/g,'&quot;')}" oninput="nvState.opties[${i}]=this.value" placeholder="Optie ${l}${l==='D'||l==='E'||l==='F'?' (optioneel)':''}">
+        <input class="form-inp" value="${opt.replace(/"/g,'&quot;')}" oninput="window.nvState.opties[${i}]=this.value" placeholder="Optie ${l}${l==='D'||l==='E'||l==='F'?' (optioneel)':''}">
         <input type="${isMulti?'checkbox':'radio'}" name="nv-juist" value="${l}" class="juist-check"
                ${nvState.correct.includes(l)?'checked':''}
                onchange="nvToggleCorrect('${l}',this.checked,${isMulti})">
@@ -545,9 +553,9 @@ function renderNvVeld() {
     let html = `<label class="form-label">Koppels (links → rechts)</label>`;
     nvState.paren.forEach((p, i) => {
       html += `<div class="match-rij">
-        <input class="form-inp" value="${p.l.replace(/"/g,'&quot;')}" oninput="nvState.paren[${i}].l=this.value" placeholder="Term…">
+        <input class="form-inp" value="${p.l.replace(/"/g,'&quot;')}" oninput="window.nvState.paren[${i}].l=this.value" placeholder="Term…">
         <span class="match-pijl">→</span>
-        <input class="form-inp" value="${p.r.replace(/"/g,'&quot;')}" oninput="nvState.paren[${i}].r=this.value" placeholder="Definitie…">
+        <input class="form-inp" value="${p.r.replace(/"/g,'&quot;')}" oninput="window.nvState.paren[${i}].r=this.value" placeholder="Definitie…">
         ${nvState.paren.length > 2 ? `<button class="btn btn-rood" style="padding:3px 7px;font-size:.78em;" onclick="nvVerwijderPaar(${i})">✕</button>` : ''}
       </div>`;
     });
@@ -560,7 +568,7 @@ function renderNvVeld() {
     nvState.items.forEach((item, i) => {
       html += `<div class="item-rij">
         <span class="item-nr">${i+1}</span>
-        <input class="form-inp" value="${item.replace(/"/g,'&quot;')}" oninput="nvState.items[${i}]=this.value" placeholder="Item ${i+1}…">
+        <input class="form-inp" value="${item.replace(/"/g,'&quot;')}" oninput="window.nvState.items[${i}]=this.value" placeholder="Item ${i+1}…">
         ${nvState.items.length > 2 ? `<button class="btn btn-rood" style="padding:3px 7px;font-size:.78em;" onclick="nvVerwijderItem(${i})">✕</button>` : ''}
       </div>`;
     });
@@ -637,6 +645,7 @@ window.vraagBewerkStart = function(quizId, vraagId) {
 window.vraagBewerkAnnuleer = function(quizId) {
   bewerkVraagId = null;
   nvState = { type: 'mc', tekst: '', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
+  window.nvState = nvState;
   document.getElementById('nv-type').value = 'mc';
   document.getElementById('nv-tekst').value = '';
   renderNvVeld();
@@ -690,6 +699,7 @@ window.vraagToevoegen = async function(quizId) {
 
   document.getElementById('nv-tekst').value = '';
   nvState = { type, tekst: '', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
+  window.nvState = nvState;
   renderNvVeld();
 };
 

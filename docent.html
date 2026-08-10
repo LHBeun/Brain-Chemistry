@@ -209,7 +209,7 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
           <option>MAVO</option><option>HAVO</option><option>VWO</option>
         </select>
         <input class="filter" id="filter-onderwerp" placeholder="Zoek op onderwerp…" oninput="filterQuizzes()">
-        <input class="filter" id="filter-hoofdstuk" placeholder="Zoek op hoofdstuk…" oninput="filterQuizzes()">
+        <input class="filter" id="filter-titel" placeholder="Zoek op titel (bijv. 1.1)…" oninput="filterQuizzes()">
       </div>
     </div>
     <div class="quiz-lijst" id="quiz-lijst">
@@ -248,9 +248,6 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
         <select class="form-inp" id="modal-niveau"><option>MAVO</option><option>HAVO</option><option>VWO</option></select>
       </div>
       <div><label class="form-label">Onderwerp</label><input class="form-inp" id="modal-onderwerp" placeholder="Bijv. Zuren en Basen"></div>
-    </div>
-    <div class="form-rij">
-      <div><label class="form-label">Hoofdstuk</label><input class="form-inp" id="modal-hoofdstuk" placeholder="Bijv. H1 of 5.4"></div>
     </div>
     <div class="modal-acties">
       <button class="btn btn-grijs" onclick="sluitModal('modal-quiz')">Annuleren</button>
@@ -376,14 +373,14 @@ function renderQuizLijst() {
   const leerjaar  = document.getElementById('filter-leerjaar').value;
   const niveau    = document.getElementById('filter-niveau').value;
   const onderwerp = document.getElementById('filter-onderwerp').value.toLowerCase();
-  const hoofdstuk = document.getElementById('filter-hoofdstuk').value.toLowerCase();
+  const titel     = document.getElementById('filter-titel').value.toLowerCase();
   const el        = document.getElementById('quiz-lijst');
 
   const gefilterd = Object.entries(alleQuizzes).filter(([, q]) => {
     if (leerjaar  && q.leerjaar  !== leerjaar)  return false;
     if (niveau    && q.niveau    !== niveau)    return false;
     if (onderwerp && !q.onderwerp?.toLowerCase().includes(onderwerp)) return false;
-    if (hoofdstuk && !q.hoofdstuk?.toLowerCase().includes(hoofdstuk)) return false;
+    if (titel     && !q.naam?.toLowerCase().includes(titel)) return false;
     return true;
   });
 
@@ -398,7 +395,6 @@ function renderQuizLijst() {
         <span class="tag">Jaar ${q.leerjaar}</span>
         <span class="tag g">${q.niveau}</span>
         <span class="tag p">${q.onderwerp}</span>
-        ${q.hoofdstuk ? `<span class="tag">${q.hoofdstuk}</span>` : ''}
         <span style="color:#475569">${n} vragen</span>
       </div>`;
     div.onclick = () => { actieveQuizId = id; renderQuizLijst(); toonQuizDetail(id); };
@@ -421,8 +417,7 @@ function toonQuizDetail(quizId) {
           <span class="tag">Jaar ${q.leerjaar}</span>
           <span class="tag g">${q.niveau}</span>
           <span class="tag p">${q.onderwerp}</span>
-          ${q.hoofdstuk ? `<span class="tag">${q.hoofdstuk}</span>` : ''}
-        </div>
+          </div>
         <div class="quiz-acties">
           <button class="btn btn-groen" onclick="startQuiz('${quizId}')">▶ Start quiz</button>
           <button class="btn btn-grijs" onclick="openBewerkenModal('${quizId}')">✏ Bewerken</button>
@@ -725,7 +720,6 @@ window.openNieuweQuizModal = function() {
   document.getElementById('modal-quiz-titel').textContent = 'Nieuwe quiz';
   document.getElementById('modal-naam').value = '';
   document.getElementById('modal-onderwerp').value = '';
-  document.getElementById('modal-hoofdstuk').value = '';
   document.getElementById('modal-quiz').style.display = 'flex';
 };
 
@@ -737,7 +731,6 @@ window.openBewerkenModal = function(quizId) {
   document.getElementById('modal-leerjaar').value  = q.leerjaar;
   document.getElementById('modal-niveau').value    = q.niveau;
   document.getElementById('modal-onderwerp').value = q.onderwerp;
-  document.getElementById('modal-hoofdstuk').value = q.hoofdstuk || '';
   document.getElementById('modal-quiz').style.display = 'flex';
 };
 
@@ -746,13 +739,12 @@ window.slaQuizOp = async function() {
   const leerjaar  = document.getElementById('modal-leerjaar').value;
   const niveau    = document.getElementById('modal-niveau').value;
   const onderwerp = document.getElementById('modal-onderwerp').value.trim();
-  const hoofdstuk = document.getElementById('modal-hoofdstuk').value.trim();
   if (!naam || !onderwerp) { alert('Vul naam en onderwerp in.'); return; }
   if (bewerkQuizId) {
-    await update(ref(db, `quizzes/${bewerkQuizId}`), { naam, leerjaar, niveau, onderwerp, hoofdstuk });
+    await update(ref(db, `quizzes/${bewerkQuizId}`), { naam, leerjaar, niveau, onderwerp });
   } else {
     const newRef = push(ref(db, 'quizzes'));
-    await set(newRef, { naam, leerjaar, niveau, onderwerp, hoofdstuk });
+    await set(newRef, { naam, leerjaar, niveau, onderwerp });
     actieveQuizId = newRef.key;
   }
   sluitModal('modal-quiz');
@@ -1072,7 +1064,7 @@ window.exporteerQuizResultaten = async function(sessieId) {
 };
 
 // ── Import / Voorbeeld ──
-// Metadata-rij: naam, leerjaar, niveau, onderwerp, hoofdstuk (hoofdstuk is optioneel)
+// Metadata-rij: naam, leerjaar, niveau, onderwerp
 // Kolommen vragen: type, vraag, optieA, optieB, optieC, optieD, optieE, optieF, juist, sleutelwoorden
 // mc       : opties in A-F kolommen, juist = één letter
 // mc-multi : opties in A-F kolommen, juist = kommagescheiden letters  bijv. "A,C"
@@ -1085,8 +1077,8 @@ window.exporteerQuizResultaten = async function(sessieId) {
 
 window.downloadVoorbeeldCSV = function() {
   const inhoud = [
-    'naam,leerjaar,niveau,onderwerp,hoofdstuk',
-    '"Zuren en Basen – herhaling",4,HAVO,Zuren en Basen,H7',
+    'naam,leerjaar,niveau,onderwerp',
+    '"Zuren en Basen – herhaling",4,HAVO,Zuren en Basen',
     'type,vraag,optieA,optieB,optieC,optieD,optieE,optieF,juist,sleutelwoorden',
     'mc,"Wat is het pH van puur water?",5,6,7,8,,,C,',
     'mc,"Welke stof is een sterk zuur?",Azijnzuur,Zoutzuur,Citroenzuur,Koolzuur,,,B,',
@@ -1094,8 +1086,8 @@ window.downloadVoorbeeldCSV = function() {
     'matching,"Koppel de formule aan de stofnaam.","H2O:water|NaCl:keukenzout|HCl:zoutzuur",,,,,,',
     'sorteren,"Zet de stappen van een titratie in de juiste volgorde.","Vul de buret|Voeg indicator toe|Titreer tot omslagpunt|Lees het volume af",,,,,,',
     'open,"Wat verstaan we onder neutralisatie?",,,,,,,,"zuur en base, water en zout"',
-    'naam,leerjaar,niveau,onderwerp,hoofdstuk',
-    '"Koolstofchemie – esters",4,HAVO,Koolstofchemie,H5',
+    'naam,leerjaar,niveau,onderwerp',
+    '"Koolstofchemie – esters",4,HAVO,Koolstofchemie',
     'type,vraag,optieA,optieB,optieC,optieD,optieE,optieF,juist,sleutelwoorden',
     'mc,"Welke twee stoffen vormen samen een ester?",Alcohol en carbonzuur,Alcohol en base,Zuur en zout,Aldehyde en keton,,,A,',
     'open,"Hoe heet de reactie waarbij water vrijkomt bij de vorming van een ester?",,,,,,,,condensatie',
@@ -1162,7 +1154,6 @@ window.importeerCSV = async function(event) {
     const leerjaar  = quizInfo[1] || '4';
     const niveau    = quizInfo[2] || 'HAVO';
     const onderwerp = quizInfo[3] || '';
-    const hoofdstuk = quizInfo[4] || '';
 
     const newRef = push(ref(db, 'quizzes'));
     const quizId = newRef.key;
@@ -1171,7 +1162,7 @@ window.importeerCSV = async function(event) {
     for (const regel of blok.vraagRegels) {
       const [type, vraagtekst, a, b, c, d, e, f, juist, sleutelwoorden] = parseCsv(regel);
       if (!type || !vraagtekst) continue;
-      const tags  = { leerjaar, niveau, onderwerp, hoofdstuk };
+      const tags  = { leerjaar, niveau, onderwerp };
       const vraag = { type, tekst: vraagtekst, tags, quizId, quizNaam };
 
       if (type === 'mc') {
@@ -1198,7 +1189,7 @@ window.importeerCSV = async function(event) {
       await set(ref(db, `vragenbank/${vid}`), vraag);
     }
 
-    await set(newRef, { naam: quizNaam, leerjaar, niveau, onderwerp, hoofdstuk, vragen });
+    await set(newRef, { naam: quizNaam, leerjaar, niveau, onderwerp, vragen });
     actieveQuizId = quizId;
     totaalQuizzes++;
     totaalVragen += Object.keys(vragen).length;

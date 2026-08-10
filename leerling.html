@@ -225,9 +225,9 @@ function luisterNaarSessie() {
     }
 
     if (fase === 'vraag') {
-      if (v.idx === huidigVraagIdx && heeftGeantwoord) return;
-      if (v.idx !== huidigVraagIdx) {
-        huidigVraagIdx  = v.idx;
+      if (s.vraagIdx === huidigVraagIdx && heeftGeantwoord) return;
+      if (s.vraagIdx !== huidigVraagIdx) {
+        huidigVraagIdx  = s.vraagIdx;
         heeftGeantwoord = false;
       }
       huidigeVraag = v;

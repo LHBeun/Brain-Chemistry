@@ -151,7 +151,7 @@ button.grote-knop:disabled { opacity: .4; cursor: not-allowed; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, update }
+import { getDatabase, ref, set, onValue, update, onDisconnect, remove }
     from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
 import { getAuth, signInAnonymously, setPersistence, browserSessionPersistence }
     from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
@@ -195,6 +195,10 @@ window.deelnemen = function() {
   mijnId   = auth.currentUser.uid;
 
   set(ref(db, 'deelnemers/' + mijnId), { naam });
+  // Zorg dat deze deelnemer automatisch verdwijnt zodra de verbinding wegvalt
+  // (tabblad gesloten, browser dicht, netwerk weg) — anders blijft iedereen
+  // die ooit heeft meegedaan voor altijd als "online" meetellen.
+  onDisconnect(ref(db, 'deelnemers/' + mijnId)).remove();
   document.getElementById('naam-badge').textContent = naam;
   toon('scherm-wacht');
   luisterNaarSessie();

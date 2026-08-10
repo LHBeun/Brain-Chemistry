@@ -357,13 +357,15 @@ function startListeners() {
   });
 
   onValue(ref(db, 'antwoorden'), snap => {
-    if (!sessieActief) return;
+    const data = snap.exists() ? snap.val() : {};
+    console.log('[antwoorden-listener] fired, aantal:', Object.keys(data).length, 'sessieActief:', sessieActief, 'actieveQuizId:', actieveQuizId, 'sessieVraagIdx:', sessieVraagIdx);
+    if (!sessieActief) { console.log('[antwoorden-listener] genegeerd: geen actieve sessie'); return; }
     const quiz   = alleQuizzes[actieveQuizId];
-    if (!quiz) return;
+    if (!quiz) { console.log('[antwoorden-listener] genegeerd: quiz niet gevonden voor', actieveQuizId); return; }
     const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
     const vraag  = vragen[sessieVraagIdx];
-    if (!vraag) return;
-    toonSessieStats(snap.exists() ? snap.val() : {}, vraag);
+    if (!vraag) { console.log('[antwoorden-listener] genegeerd: geen vraag op index', sessieVraagIdx); return; }
+    toonSessieStats(data, vraag);
   });
 
   onValue(ref(db, 'scores'), snap => {
@@ -770,6 +772,7 @@ window.sluitModal = id => { document.getElementById(id).style.display = 'none'; 
 
 // ── Sessie starten ──
 window.startQuiz = async function(quizId) {
+  console.log('[startQuiz] gestart voor quiz', quizId);
   const quiz   = alleQuizzes[quizId];
   const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
   if (!vragen.length) { alert('Geen vragen in deze quiz.'); return; }
@@ -780,17 +783,24 @@ window.startQuiz = async function(quizId) {
   huidigeFase     = 'vraag';
   huidigeSessieId = 'sessie_' + Date.now();
 
-  await remove(ref(db, 'antwoorden'));
-  await remove(ref(db, 'scores'));
-  await set(ref(db, `resultaten/${huidigeSessieId}/meta`), {
-    quizNaam: quiz.naam, leerjaar: quiz.leerjaar,
-    niveau: quiz.niveau, onderwerp: quiz.onderwerp,
-    datum: new Date().toLocaleDateString('nl-NL')
-  });
-  await set(ref(db, 'sessie'), {
-    actief: true, quizId, quizNaam: quiz.naam,
-    vraagIdx: 0, vraag: vragen[0], fase: 'vraag'
-  });
+  try {
+    await remove(ref(db, 'antwoorden'));
+    await remove(ref(db, 'scores'));
+    await set(ref(db, `resultaten/${huidigeSessieId}/meta`), {
+      quizNaam: quiz.naam, leerjaar: quiz.leerjaar,
+      niveau: quiz.niveau, onderwerp: quiz.onderwerp,
+      datum: new Date().toLocaleDateString('nl-NL')
+    });
+    await set(ref(db, 'sessie'), {
+      actief: true, quizId, quizNaam: quiz.naam,
+      vraagIdx: 0, vraag: vragen[0], fase: 'vraag'
+    });
+    console.log('[startQuiz] sessie succesvol weggeschreven naar Firebase:', { vraagIdx: 0, fase: 'vraag' });
+  } catch (err) {
+    console.error('[startQuiz] FOUT bij wegschrijven:', err);
+    alert('❌ Starten van de quiz is mislukt: ' + (err?.message || err));
+    return;
+  }
   toonSessieScherm(quizId, 0);
 };
 
@@ -869,71 +879,87 @@ function toonSessieScherm(quizId, idx) {
 
 // ── Resultaten tonen + nakijken ──
 window.toonResultaten = async function(quizId, idx) {
-  const quiz   = alleQuizzes[quizId];
-  const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
-  const vraag  = vragen[idx];
+  console.log('[toonResultaten] gestart voor vraag', idx);
+  try {
+    const quiz   = alleQuizzes[quizId];
+    const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
+    const vraag  = vragen[idx];
 
-  const snap = await get(ref(db, 'antwoorden'));
-  const antwoorden = snap.exists() ? snap.val() : {};
+    const snap = await get(ref(db, 'antwoorden'));
+    const antwoorden = snap.exists() ? snap.val() : {};
+    console.log('[toonResultaten] aantal antwoorden gevonden:', Object.keys(antwoorden).length);
 
-  for (const [leerlingId, a] of Object.entries(antwoorden)) {
-    let correct = false;
-    const type = vraag.type;
-    if (type === 'mc') {
-      correct = a.antwoord === vraag.juist;
-    } else if (type === 'mc-multi') {
-      try {
-        const student = JSON.parse(a.antwoord || '[]').sort();
-        const juist   = (Array.isArray(vraag.juist) ? vraag.juist : [vraag.juist]).sort();
-        correct = JSON.stringify(student) === JSON.stringify(juist);
-      } catch { correct = false; }
-    } else if (type === 'matching') {
-      try {
-        const studentMap = JSON.parse(a.antwoord || '{}');
-        const juistMap   = {};
-        (vraag.paren || []).forEach(p => { juistMap[p.l] = p.r; });
-        correct = Object.entries(juistMap).every(([k, v]) => studentMap[k] === v);
-      } catch { correct = false; }
-    } else if (type === 'sorteren') {
-      try {
-        correct = JSON.stringify(JSON.parse(a.antwoord || '[]')) === JSON.stringify(vraag.items || []);
-      } catch { correct = false; }
-    } else {
-      const kws  = (vraag.sleutelwoorden || '').split(';').map(k => k.trim().toLowerCase()).filter(k => k);
-      const antw = (a.antwoord || '').toLowerCase();
-      correct = kws.length > 0 && kws.some(k => antw.includes(k));
-    }
-
-    await update(ref(db, `antwoorden/${leerlingId}`), { correct });
-    const scoreSnap = await get(ref(db, `scores/${leerlingId}`));
-    const oud = scoreSnap.exists() ? (scoreSnap.val().punten || 0) : 0;
-    await set(ref(db, `scores/${leerlingId}`), { naam: a.naam, punten: correct ? oud + 1 : oud });
-  }
-
-  if (huidigeSessieId) {
-    await set(ref(db, `resultaten/${huidigeSessieId}/vragen/${idx}`), { tekst: vraag.tekst, type: vraag.type });
     for (const [leerlingId, a] of Object.entries(antwoorden)) {
-      await set(ref(db, `resultaten/${huidigeSessieId}/antwoorden/${leerlingId}/vraag_${idx}`), {
-        naam: a.naam, antwoord: a.antwoord, correct: antwoorden[leerlingId]?.correct ?? false
-      });
-    }
-  }
+      let correct = false;
+      const type = vraag.type;
+      if (type === 'mc') {
+        correct = a.antwoord === vraag.juist;
+      } else if (type === 'mc-multi') {
+        try {
+          const student = JSON.parse(a.antwoord || '[]').sort();
+          const juist   = (Array.isArray(vraag.juist) ? vraag.juist : [vraag.juist]).sort();
+          correct = JSON.stringify(student) === JSON.stringify(juist);
+        } catch { correct = false; }
+      } else if (type === 'matching') {
+        try {
+          const studentMap = JSON.parse(a.antwoord || '{}');
+          const juistMap   = {};
+          (vraag.paren || []).forEach(p => { juistMap[p.l] = p.r; });
+          correct = Object.entries(juistMap).every(([k, v]) => studentMap[k] === v);
+        } catch { correct = false; }
+      } else if (type === 'sorteren') {
+        try {
+          correct = JSON.stringify(JSON.parse(a.antwoord || '[]')) === JSON.stringify(vraag.items || []);
+        } catch { correct = false; }
+      } else {
+        const kws  = (vraag.sleutelwoorden || '').split(';').map(k => k.trim().toLowerCase()).filter(k => k);
+        const antw = (a.antwoord || '').toLowerCase();
+        correct = kws.length > 0 && kws.some(k => antw.includes(k));
+      }
 
-  await update(ref(db, 'sessie'), { fase: 'resultaten' });
-  huidigeFase = 'resultaten';
-  document.getElementById('btn-next')?.removeAttribute('disabled');
-  document.getElementById('btn-toon')?.setAttribute('disabled', true);
+      await update(ref(db, `antwoorden/${leerlingId}`), { correct });
+      const scoreSnap = await get(ref(db, `scores/${leerlingId}`));
+      const oud = scoreSnap.exists() ? (scoreSnap.val().punten || 0) : 0;
+      await set(ref(db, `scores/${leerlingId}`), { naam: a.naam, punten: correct ? oud + 1 : oud });
+    }
+
+    if (huidigeSessieId) {
+      await set(ref(db, `resultaten/${huidigeSessieId}/vragen/${idx}`), { tekst: vraag.tekst, type: vraag.type });
+      for (const [leerlingId, a] of Object.entries(antwoorden)) {
+        await set(ref(db, `resultaten/${huidigeSessieId}/antwoorden/${leerlingId}/vraag_${idx}`), {
+          naam: a.naam, antwoord: a.antwoord, correct: antwoorden[leerlingId]?.correct ?? false
+        });
+      }
+    }
+
+    await update(ref(db, 'sessie'), { fase: 'resultaten' });
+    huidigeFase = 'resultaten';
+    document.getElementById('btn-next')?.removeAttribute('disabled');
+    document.getElementById('btn-toon')?.setAttribute('disabled', true);
+    console.log('[toonResultaten] klaar, "Volgende"-knop vrijgegeven');
+  } catch (err) {
+    console.error('[toonResultaten] FOUT:', err);
+    alert('❌ Resultaten tonen is mislukt: ' + (err?.message || err) + '\n\nDe "Volgende"-knop wordt nu handmatig vrijgegeven zodat je door kunt.');
+    document.getElementById('btn-next')?.removeAttribute('disabled');
+  }
 };
 
 // ── Volgende vraag ──
 window.volgendeVraag = async function(quizId, idx) {
-  const quiz   = alleQuizzes[quizId];
-  const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
-  sessieVraagIdx = idx;
-  huidigeFase    = 'vraag';
-  await remove(ref(db, 'antwoorden'));
-  await update(ref(db, 'sessie'), { vraagIdx: idx, vraag: vragen[idx], fase: 'vraag' });
-  toonSessieScherm(quizId, idx);
+  console.log('[volgendeVraag] naar vraag', idx);
+  try {
+    const quiz   = alleQuizzes[quizId];
+    const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
+    sessieVraagIdx = idx;
+    huidigeFase    = 'vraag';
+    await remove(ref(db, 'antwoorden'));
+    await update(ref(db, 'sessie'), { vraagIdx: idx, vraag: vragen[idx], fase: 'vraag' });
+    console.log('[volgendeVraag] sessie bijgewerkt naar vraagIdx', idx);
+    toonSessieScherm(quizId, idx);
+  } catch (err) {
+    console.error('[volgendeVraag] FOUT:', err);
+    alert('❌ Doorgaan naar volgende vraag is mislukt: ' + (err?.message || err));
+  }
 };
 
 window.eindeQuiz = async function(quizId) {
@@ -962,10 +988,18 @@ window.stopSessie = async function(quizId) {
 window.opschonenDeelnemers = async function() {
   if (!confirm('Alle huidige "leerlingen online" verwijderen? Gebruik dit als het aantal niet meer klopt (bijv. na eerder testen).')) return;
   try {
+    const voorSnap = await get(ref(db, 'deelnemers'));
+    console.log('[opschonen] vóór verwijderen:', voorSnap.exists() ? Object.keys(voorSnap.val()).length : 0, 'deelnemers');
     await remove(ref(db, 'deelnemers'));
-    alert('✅ Deelnemerslijst opgeschoond.');
+    const naSnap = await get(ref(db, 'deelnemers'));
+    console.log('[opschonen] ná verwijderen:', naSnap.exists() ? Object.keys(naSnap.val()).length : 0, 'deelnemers');
+    if (naSnap.exists()) {
+      alert('⚠️ Opschonen leek te lukken, maar er staan nog steeds ' + Object.keys(naSnap.val()).length + ' deelnemers. Mogelijk komen die net op dat moment weer terug (bijv. leerlingen die nog verbonden zijn en zichzelf niet opnieuw registreren, dus dit zou niet moeten gebeuren — stuur een screenshot van de console als dit gebeurt).');
+    } else {
+      alert('✅ Deelnemerslijst opgeschoond.');
+    }
   } catch (err) {
-    console.error('Opschonen mislukt:', err);
+    console.error('[opschonen] FOUT:', err);
     alert('❌ Opschonen is mislukt: ' + (err?.message || err));
   }
 };

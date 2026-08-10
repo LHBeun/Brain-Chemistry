@@ -209,6 +209,7 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
           <option>MAVO</option><option>HAVO</option><option>VWO</option>
         </select>
         <input class="filter" id="filter-onderwerp" placeholder="Zoek op onderwerp…" oninput="filterQuizzes()">
+        <input class="filter" id="filter-hoofdstuk" placeholder="Zoek op hoofdstuk…" oninput="filterQuizzes()">
       </div>
     </div>
     <div class="quiz-lijst" id="quiz-lijst">
@@ -247,6 +248,9 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
         <select class="form-inp" id="modal-niveau"><option>MAVO</option><option>HAVO</option><option>VWO</option></select>
       </div>
       <div><label class="form-label">Onderwerp</label><input class="form-inp" id="modal-onderwerp" placeholder="Bijv. Zuren en Basen"></div>
+    </div>
+    <div class="form-rij">
+      <div><label class="form-label">Hoofdstuk</label><input class="form-inp" id="modal-hoofdstuk" placeholder="Bijv. H1 of 5.4"></div>
     </div>
     <div class="modal-acties">
       <button class="btn btn-grijs" onclick="sluitModal('modal-quiz')">Annuleren</button>
@@ -372,12 +376,14 @@ function renderQuizLijst() {
   const leerjaar  = document.getElementById('filter-leerjaar').value;
   const niveau    = document.getElementById('filter-niveau').value;
   const onderwerp = document.getElementById('filter-onderwerp').value.toLowerCase();
+  const hoofdstuk = document.getElementById('filter-hoofdstuk').value.toLowerCase();
   const el        = document.getElementById('quiz-lijst');
 
   const gefilterd = Object.entries(alleQuizzes).filter(([, q]) => {
     if (leerjaar  && q.leerjaar  !== leerjaar)  return false;
     if (niveau    && q.niveau    !== niveau)    return false;
     if (onderwerp && !q.onderwerp?.toLowerCase().includes(onderwerp)) return false;
+    if (hoofdstuk && !q.hoofdstuk?.toLowerCase().includes(hoofdstuk)) return false;
     return true;
   });
 
@@ -392,6 +398,7 @@ function renderQuizLijst() {
         <span class="tag">Jaar ${q.leerjaar}</span>
         <span class="tag g">${q.niveau}</span>
         <span class="tag p">${q.onderwerp}</span>
+        ${q.hoofdstuk ? `<span class="tag">${q.hoofdstuk}</span>` : ''}
         <span style="color:#475569">${n} vragen</span>
       </div>`;
     div.onclick = () => { actieveQuizId = id; renderQuizLijst(); toonQuizDetail(id); };
@@ -414,6 +421,7 @@ function toonQuizDetail(quizId) {
           <span class="tag">Jaar ${q.leerjaar}</span>
           <span class="tag g">${q.niveau}</span>
           <span class="tag p">${q.onderwerp}</span>
+          ${q.hoofdstuk ? `<span class="tag">${q.hoofdstuk}</span>` : ''}
         </div>
         <div class="quiz-acties">
           <button class="btn btn-groen" onclick="startQuiz('${quizId}')">▶ Start quiz</button>
@@ -717,6 +725,7 @@ window.openNieuweQuizModal = function() {
   document.getElementById('modal-quiz-titel').textContent = 'Nieuwe quiz';
   document.getElementById('modal-naam').value = '';
   document.getElementById('modal-onderwerp').value = '';
+  document.getElementById('modal-hoofdstuk').value = '';
   document.getElementById('modal-quiz').style.display = 'flex';
 };
 
@@ -728,6 +737,7 @@ window.openBewerkenModal = function(quizId) {
   document.getElementById('modal-leerjaar').value  = q.leerjaar;
   document.getElementById('modal-niveau').value    = q.niveau;
   document.getElementById('modal-onderwerp').value = q.onderwerp;
+  document.getElementById('modal-hoofdstuk').value = q.hoofdstuk || '';
   document.getElementById('modal-quiz').style.display = 'flex';
 };
 
@@ -736,12 +746,13 @@ window.slaQuizOp = async function() {
   const leerjaar  = document.getElementById('modal-leerjaar').value;
   const niveau    = document.getElementById('modal-niveau').value;
   const onderwerp = document.getElementById('modal-onderwerp').value.trim();
+  const hoofdstuk = document.getElementById('modal-hoofdstuk').value.trim();
   if (!naam || !onderwerp) { alert('Vul naam en onderwerp in.'); return; }
   if (bewerkQuizId) {
-    await update(ref(db, `quizzes/${bewerkQuizId}`), { naam, leerjaar, niveau, onderwerp });
+    await update(ref(db, `quizzes/${bewerkQuizId}`), { naam, leerjaar, niveau, onderwerp, hoofdstuk });
   } else {
     const newRef = push(ref(db, 'quizzes'));
-    await set(newRef, { naam, leerjaar, niveau, onderwerp });
+    await set(newRef, { naam, leerjaar, niveau, onderwerp, hoofdstuk });
     actieveQuizId = newRef.key;
   }
   sluitModal('modal-quiz');
@@ -1061,17 +1072,21 @@ window.exporteerQuizResultaten = async function(sessieId) {
 };
 
 // ── Import / Voorbeeld ──
-// Kolommen: type, vraag, optieA, optieB, optieC, optieD, optieE, optieF, juist, sleutelwoorden
+// Metadata-rij: naam, leerjaar, niveau, onderwerp, hoofdstuk (hoofdstuk is optioneel)
+// Kolommen vragen: type, vraag, optieA, optieB, optieC, optieD, optieE, optieF, juist, sleutelwoorden
 // mc       : opties in A-F kolommen, juist = één letter
 // mc-multi : opties in A-F kolommen, juist = kommagescheiden letters  bijv. "A,C"
 // matching : optieA = koppelparen  bijv. "H2O:water|NaCl:zout"
 // sorteren : optieA = items in volgorde bijv. "stap1|stap2|stap3"
 // open     : sleutelwoorden in laatste kolom
+//
+// Eén CSV-bestand mag meerdere quizzes bevatten: herhaal simpelweg het blok
+// (metadata-header, metadata-rij, vragen-header, vragen...) voor elke volgende quiz.
 
 window.downloadVoorbeeldCSV = function() {
   const inhoud = [
-    'naam,leerjaar,niveau,onderwerp',
-    '"Zuren en Basen – herhaling",4,HAVO,Zuren en Basen',
+    'naam,leerjaar,niveau,onderwerp,hoofdstuk',
+    '"Zuren en Basen – herhaling",4,HAVO,Zuren en Basen,H7',
     'type,vraag,optieA,optieB,optieC,optieD,optieE,optieF,juist,sleutelwoorden',
     'mc,"Wat is het pH van puur water?",5,6,7,8,,,C,',
     'mc,"Welke stof is een sterk zuur?",Azijnzuur,Zoutzuur,Citroenzuur,Koolzuur,,,B,',
@@ -1079,6 +1094,11 @@ window.downloadVoorbeeldCSV = function() {
     'matching,"Koppel de formule aan de stofnaam.","H2O:water|NaCl:keukenzout|HCl:zoutzuur",,,,,,',
     'sorteren,"Zet de stappen van een titratie in de juiste volgorde.","Vul de buret|Voeg indicator toe|Titreer tot omslagpunt|Lees het volume af",,,,,,',
     'open,"Wat verstaan we onder neutralisatie?",,,,,,,,"zuur en base, water en zout"',
+    'naam,leerjaar,niveau,onderwerp,hoofdstuk',
+    '"Koolstofchemie – esters",4,HAVO,Koolstofchemie,H5',
+    'type,vraag,optieA,optieB,optieC,optieD,optieE,optieF,juist,sleutelwoorden',
+    'mc,"Welke twee stoffen vormen samen een ester?",Alcohol en carbonzuur,Alcohol en base,Zuur en zout,Aldehyde en keton,,,A,',
+    'open,"Hoe heet de reactie waarbij water vrijkomt bij de vorming van een ester?",,,,,,,,condensatie',
   ].join('\n');
   const link = document.createElement('a');
   link.href = URL.createObjectURL(new Blob([inhoud], { type: 'text/csv;charset=utf-8;' }));
@@ -1104,50 +1124,93 @@ window.importeerCSV = async function(event) {
     return result;
   }
 
-  const quizInfo  = parseCsv(regels[1]);
-  const quizNaam  = quizInfo[0] || 'Geïmporteerde quiz';
-  const leerjaar  = quizInfo[1] || '4';
-  const niveau    = quizInfo[2] || 'HAVO';
-  const onderwerp = quizInfo[3] || '';
-
-  const newRef = push(ref(db, 'quizzes'));
-  const quizId = newRef.key;
-  const vragen = {};
-
-  for (const regel of regels.slice(3)) {
-    const [type, vraagtekst, a, b, c, d, e, f, juist, sleutelwoorden] = parseCsv(regel);
-    if (!type || !vraagtekst) continue;
-    const tags  = { leerjaar, niveau, onderwerp };
-    const vraag = { type, tekst: vraagtekst, tags, quizId, quizNaam };
-
-    if (type === 'mc') {
-      vraag.opties = [a, b, c, d, e, f].filter(o => o);
-      vraag.juist  = juist || null;
-    } else if (type === 'mc-multi') {
-      vraag.opties = [a, b, c, d, e, f].filter(o => o);
-      vraag.juist  = juist ? juist.split(',').map(s => s.trim()) : [];
-    } else if (type === 'matching') {
-      // a = "term1:def1|term2:def2|..."
-      vraag.paren = (a || '').split('|').map(p => {
-        const [l, r] = p.split(':');
-        return { l: (l||'').trim(), r: (r||'').trim() };
-      }).filter(p => p.l && p.r);
-    } else if (type === 'sorteren') {
-      // a = "item1|item2|item3"
-      vraag.items = (a || '').split('|').map(s => s.trim()).filter(s => s);
-    } else {
-      vraag.sleutelwoorden = sleutelwoorden || '';
-    }
-
-    const vid = push(ref(db, `quizzes/${quizId}/vragen`)).key;
-    vragen[vid] = vraag;
-    await set(ref(db, `vragenbank/${vid}`), vraag);
+  // Herken een metadata-headerregel: begint met "naam" als eerste kolom.
+  function isMetaHeader(regel) {
+    const eerste = parseCsv(regel)[0]?.toLowerCase();
+    return eerste === 'naam';
+  }
+  // Herken een vragen-headerregel: begint met "type" als eerste kolom.
+  function isVraagHeader(regel) {
+    const eerste = parseCsv(regel)[0]?.toLowerCase();
+    return eerste === 'type';
   }
 
-  await set(newRef, { naam: quizNaam, leerjaar, niveau, onderwerp, vragen });
-  actieveQuizId = quizId;
+  // Splits het bestand in blokken: elk blok start bij een metadata-headerregel
+  // en loopt tot de volgende metadata-headerregel (of het einde van het bestand).
+  // Zo kunnen meerdere quizzes achter elkaar in één CSV staan.
+  const blokken = [];
+  let huidigBlok = null;
+  for (const regel of regels) {
+    if (isMetaHeader(regel)) {
+      huidigBlok = { metaRegel: null, vraagRegels: [] };
+      blokken.push(huidigBlok);
+      continue;
+    }
+    if (!huidigBlok) continue; // regels vóór de eerste header negeren
+    if (huidigBlok.metaRegel === null) { huidigBlok.metaRegel = regel; continue; }
+    if (isVraagHeader(regel)) continue; // vragen-headerregel zelf overslaan
+    huidigBlok.vraagRegels.push(regel);
+  }
+  if (!blokken.length) { alert('Geen geldige quiz-blokken gevonden in de CSV.'); return; }
+
+  let totaalQuizzes = 0, totaalVragen = 0, namen = [];
+
+  for (const blok of blokken) {
+    if (!blok.metaRegel) continue;
+    const quizInfo  = parseCsv(blok.metaRegel);
+    const quizNaam  = quizInfo[0] || 'Geïmporteerde quiz';
+    const leerjaar  = quizInfo[1] || '4';
+    const niveau    = quizInfo[2] || 'HAVO';
+    const onderwerp = quizInfo[3] || '';
+    const hoofdstuk = quizInfo[4] || '';
+
+    const newRef = push(ref(db, 'quizzes'));
+    const quizId = newRef.key;
+    const vragen = {};
+
+    for (const regel of blok.vraagRegels) {
+      const [type, vraagtekst, a, b, c, d, e, f, juist, sleutelwoorden] = parseCsv(regel);
+      if (!type || !vraagtekst) continue;
+      const tags  = { leerjaar, niveau, onderwerp, hoofdstuk };
+      const vraag = { type, tekst: vraagtekst, tags, quizId, quizNaam };
+
+      if (type === 'mc') {
+        vraag.opties = [a, b, c, d, e, f].filter(o => o);
+        vraag.juist  = juist || null;
+      } else if (type === 'mc-multi') {
+        vraag.opties = [a, b, c, d, e, f].filter(o => o);
+        vraag.juist  = juist ? juist.split(',').map(s => s.trim()) : [];
+      } else if (type === 'matching') {
+        // a = "term1:def1|term2:def2|..."
+        vraag.paren = (a || '').split('|').map(p => {
+          const [l, r] = p.split(':');
+          return { l: (l||'').trim(), r: (r||'').trim() };
+        }).filter(p => p.l && p.r);
+      } else if (type === 'sorteren') {
+        // a = "item1|item2|item3"
+        vraag.items = (a || '').split('|').map(s => s.trim()).filter(s => s);
+      } else {
+        vraag.sleutelwoorden = sleutelwoorden || '';
+      }
+
+      const vid = push(ref(db, `quizzes/${quizId}/vragen`)).key;
+      vragen[vid] = vraag;
+      await set(ref(db, `vragenbank/${vid}`), vraag);
+    }
+
+    await set(newRef, { naam: quizNaam, leerjaar, niveau, onderwerp, hoofdstuk, vragen });
+    actieveQuizId = quizId;
+    totaalQuizzes++;
+    totaalVragen += Object.keys(vragen).length;
+    namen.push(quizNaam);
+  }
+
   event.target.value = '';
-  alert(`✅ Quiz "${quizNaam}" geïmporteerd met ${Object.keys(vragen).length} vragen!`);
+  if (totaalQuizzes === 1) {
+    alert(`✅ Quiz "${namen[0]}" geïmporteerd met ${totaalVragen} vragen!`);
+  } else {
+    alert(`✅ ${totaalQuizzes} quizzes geïmporteerd (${totaalVragen} vragen in totaal):\n${namen.join('\n')}`);
+  }
 };
 
 // ── Drag-and-drop volgorde ──

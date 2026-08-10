@@ -320,11 +320,17 @@ let huidigeSessieId = null;
 // Formulier state
 let nvState = {
   type: 'mc',
+  tekst: '',
   opties: ['', '', ''],
   correct: [],
   paren: [{ l: '', r: '' }, { l: '', r: '' }],
   items: ['', '', '']
 };
+// Onthoudt voor welke quiz het "nieuwe vraag"-formulier nu staat, zodat een
+// automatische her-render (bijv. door de Firebase-listener hieronder) het
+// formulier niet stiekem leegveegt terwijl iemand middenin het invullen zit —
+// alleen bij het wisselen naar een ANDERE quiz wordt het echt gereset.
+let nvFormQuizId = null;
 
 // ── Firebase listeners (pas gestart na bevestigd docent-login) ──
 function startListeners() {
@@ -420,8 +426,16 @@ function toonQuizDetail(quizId) {
       </div>
     </div>`;
 
-  // Init form state
-  nvState = { type: 'mc', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
+  // Formulier-state: alleen resetten als dit echt een ANDERE quiz is dan
+  // waarvoor het "nieuwe vraag"-formulier al openstond. Bij een her-render van
+  // dezelfde quiz (bijv. doordat de Firebase-listener hierboven opnieuw
+  // afvuurt) blijft alles staan wat de docent al heeft ingevuld — inclusief
+  // het gekozen vraagtype en alle koppels/opties/items.
+  if (quizId !== nvFormQuizId) {
+    nvFormQuizId = quizId;
+    bewerkVraagId = null;
+    nvState = { type: 'mc', tekst: '', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
+  }
   renderNvVeld();
 }
 
@@ -476,18 +490,18 @@ function renderNieuwVraagForm(quizId) {
       <div>
         <label class="form-label">Type</label>
         <select class="form-inp" id="nv-type" onchange="nvTypeChange()">
-          <option value="mc">Meerkeuze (1 antwoord)</option>
-          <option value="mc-multi">Meerkeuze (meerdere antwoorden)</option>
-          <option value="matching">Koppelen</option>
-          <option value="sorteren">Sorteren</option>
-          <option value="open">Open vraag</option>
+          <option value="mc" ${nvState.type==='mc'?'selected':''}>Meerkeuze (1 antwoord)</option>
+          <option value="mc-multi" ${nvState.type==='mc-multi'?'selected':''}>Meerkeuze (meerdere antwoorden)</option>
+          <option value="matching" ${nvState.type==='matching'?'selected':''}>Koppelen</option>
+          <option value="sorteren" ${nvState.type==='sorteren'?'selected':''}>Sorteren</option>
+          <option value="open" ${nvState.type==='open'?'selected':''}>Open vraag</option>
         </select>
       </div>
     </div>
     <div class="form-rij enkel">
       <div>
         <label class="form-label">Vraag</label>
-        <textarea class="form-inp" id="nv-tekst" rows="2" placeholder="Typ je vraag…"></textarea>
+        <textarea class="form-inp" id="nv-tekst" rows="2" placeholder="Typ je vraag…" oninput="nvState.tekst=this.value">${(nvState.tekst||'').replace(/</g,'&lt;')}</textarea>
       </div>
     </div>
     <div id="nv-type-veld"></div>
@@ -586,6 +600,7 @@ window.vraagBewerkStart = function(quizId, vraagId) {
 
   // Vul nvState vanuit bestaande vraag
   nvState.type    = v.type;
+  nvState.tekst   = v.tekst || '';
   nvState.opties  = v.opties ? [...v.opties] : ['','',''];
   nvState.correct = v.juist  ? (Array.isArray(v.juist) ? [...v.juist] : [v.juist]) : [];
   nvState.paren   = v.paren  ? v.paren.map(p => ({l:p.l, r:p.r})) : [{l:'',r:''},{l:'',r:''}];
@@ -621,7 +636,7 @@ window.vraagBewerkStart = function(quizId, vraagId) {
 
 window.vraagBewerkAnnuleer = function(quizId) {
   bewerkVraagId = null;
-  nvState = { type: 'mc', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
+  nvState = { type: 'mc', tekst: '', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
   document.getElementById('nv-type').value = 'mc';
   document.getElementById('nv-tekst').value = '';
   renderNvVeld();
@@ -674,7 +689,7 @@ window.vraagToevoegen = async function(quizId) {
   }
 
   document.getElementById('nv-tekst').value = '';
-  nvState = { type, opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
+  nvState = { type, tekst: '', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
   renderNvVeld();
 };
 

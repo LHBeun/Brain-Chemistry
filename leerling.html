@@ -193,8 +193,11 @@ window.deelnemen = function() {
   if (!naam) { document.getElementById('naam-input').focus(); return; }
   mijnNaam = naam;
   mijnId   = auth.currentUser.uid;
+  console.log('[deelnemen]', naam, 'met id', mijnId);
 
-  set(ref(db, 'deelnemers/' + mijnId), { naam });
+  set(ref(db, 'deelnemers/' + mijnId), { naam })
+    .then(() => console.log('[deelnemen] succesvol geregistreerd'))
+    .catch(err => { console.error('[deelnemen] FOUT:', err); alert('❌ Meedoen mislukt: ' + (err?.message || err)); });
   // Zorg dat deze deelnemer automatisch verdwijnt zodra de verbinding wegvalt
   // (tabblad gesloten, browser dicht, netwerk weg) — anders blijft iedereen
   // die ooit heeft meegedaan voor altijd als "online" meetellen.
@@ -204,10 +207,13 @@ window.deelnemen = function() {
   luisterNaarSessie();
 };
 
+let nakijkListenerActief = false;
+
 function luisterNaarSessie() {
   onValue(ref(db, 'sessie'), snap => {
-    if (!snap.exists()) { toon('scherm-wacht'); return; }
+    if (!snap.exists()) { console.log('[sessie] geen sessie-node'); toon('scherm-wacht'); return; }
     const s = snap.val();
+    console.log('[sessie] update ontvangen:', { actief: s.actief, fase: s.fase, vraagIdx: s.vraagIdx, huidigVraagIdx, heeftGeantwoord });
 
     if (!s.actief) {
       if (s.fase === 'einde') {
@@ -224,22 +230,29 @@ function luisterNaarSessie() {
     const v    = s.vraag;
 
     if (fase === 'resultaten' && heeftGeantwoord) {
-      // Luister naar eigen nakijkresultaat
-      onValue(ref(db, `antwoorden/${mijnId}`), aSnap => {
-        if (!aSnap.exists()) return;
-        const a = aSnap.val();
-        if (a.correct !== undefined) toonFeedback(a.correct);
-      });
+      // Luister eenmalig naar eigen nakijkresultaat (niet opnieuw registreren
+      // bij elke sessie-update, anders stapelen listeners zich op)
+      if (!nakijkListenerActief) {
+        nakijkListenerActief = true;
+        onValue(ref(db, `antwoorden/${mijnId}`), aSnap => {
+          if (!aSnap.exists()) return;
+          const a = aSnap.val();
+          console.log('[nakijken] eigen antwoord-status:', a);
+          if (a.correct !== undefined) toonFeedback(a.correct);
+        });
+      }
       return;
     }
 
     if (fase === 'vraag') {
-      if (s.vraagIdx === huidigVraagIdx && heeftGeantwoord) return;
+      nakijkListenerActief = false;
+      if (s.vraagIdx === huidigVraagIdx && heeftGeantwoord) { console.log('[sessie] genegeerd: zelfde vraag al beantwoord'); return; }
       if (s.vraagIdx !== huidigVraagIdx) {
         huidigVraagIdx  = s.vraagIdx;
         heeftGeantwoord = false;
       }
       huidigeVraag = v;
+      console.log('[sessie] nieuwe vraag tonen, idx', s.vraagIdx);
       toonVraag(v);
     }
   });
@@ -389,8 +402,14 @@ window.stuurOpen = function() {
 };
 
 function stuurAntwoord(antwoord) {
+  console.log('[stuurAntwoord] versturen:', antwoord, 'als', mijnId);
   set(ref(db, 'antwoorden/' + mijnId), {
     naam: mijnNaam, antwoord, tijdstip: Date.now()
+  }).then(() => {
+    console.log('[stuurAntwoord] succesvol verzonden');
+  }).catch(err => {
+    console.error('[stuurAntwoord] FOUT:', err);
+    alert('❌ Je antwoord kon niet worden verzonden: ' + (err?.message || err));
   });
 }
 

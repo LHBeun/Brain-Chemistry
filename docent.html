@@ -261,6 +261,23 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
   </div>
 </div>
 
+<!-- Modal: vraag kopiëren naar een (andere) quiz -->
+<div class="modal-overlay" id="modal-kopieer" style="display:none">
+  <div class="modal">
+    <h3>Vraag kopiëren</h3>
+    <div class="form-rij enkel">
+      <div>
+        <label class="form-label">Naar welke quiz?</label>
+        <select class="form-inp" id="kopieer-doel"></select>
+      </div>
+    </div>
+    <div class="modal-acties">
+      <button class="btn btn-grijs" onclick="sluitModal('modal-kopieer')">Annuleren</button>
+      <button class="btn btn-blauw" onclick="vraagKopieerBevestig()">📄 Kopieer</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { getDatabase, ref, set, push, onValue, remove, get, update }
@@ -524,6 +541,7 @@ function renderVraagRij(quizId, vraagId, v, i) {
       ${extra}
     </div>
     <div style="display:flex;gap:4px;flex-shrink:0;">
+      <button class="btn btn-grijs" style="padding:4px 8px;font-size:.78em;" onclick="event.stopPropagation();vraagKopieerStart('${quizId}','${vraagId}')" title="Kopieer deze vraag naar een (andere) quiz">📄</button>
       <button class="btn btn-grijs" style="padding:4px 8px;font-size:.78em;" onclick="event.stopPropagation();vraagBewerkStart('${quizId}','${vraagId}')">✏</button>
       <button class="btn btn-rood"  style="padding:4px 8px;font-size:.78em;" onclick="event.stopPropagation();vraagVerwijderen('${quizId}','${vraagId}')">✕</button>
     </div>
@@ -743,6 +761,47 @@ window.vraagToevoegen = async function(quizId) {
   nvState = { type, tekst: '', opties: ['','',''], correct: [], paren: [{l:'',r:''},{l:'',r:''}], items: ['','',''] };
   window.nvState = nvState;
   renderNvVeld();
+};
+
+// ── Vraag kopiëren naar een (andere) quiz ──
+let kopieerBron = null; // { quizId, vraagId }
+
+window.vraagKopieerStart = function(quizId, vraagId) {
+  const v = alleQuizzes[quizId]?.vragen?.[vraagId];
+  if (!v) return;
+  kopieerBron = { quizId, vraagId };
+
+  const select = document.getElementById('kopieer-doel');
+  const gesorteerd = Object.entries(alleQuizzes).sort((a, b) => a[1].naam.localeCompare(b[1].naam));
+  select.innerHTML = gesorteerd.map(([id, q]) =>
+    `<option value="${id}" ${id === quizId ? 'selected' : ''}>${q.naam} (jaar ${q.leerjaar}, ${q.niveau})</option>`
+  ).join('');
+
+  document.getElementById('modal-kopieer').style.display = 'flex';
+};
+
+window.vraagKopieerBevestig = async function() {
+  if (!kopieerBron) return;
+  const doelQuizId = document.getElementById('kopieer-doel').value;
+  const bronVraag  = alleQuizzes[kopieerBron.quizId]?.vragen?.[kopieerBron.vraagId];
+  if (!bronVraag || !doelQuizId) { sluitModal('modal-kopieer'); return; }
+
+  const doelQuiz = alleQuizzes[doelQuizId];
+  // Diepe kopie + tags/quizId/quizNaam bijwerken naar de doelquiz, zodat de
+  // vraag in de vragenbank correct naar zijn (nieuwe) quiz verwijst.
+  const kopie = JSON.parse(JSON.stringify(bronVraag));
+  kopie.quizId   = doelQuizId;
+  kopie.quizNaam = doelQuiz.naam;
+  kopie.tags     = { leerjaar: doelQuiz.leerjaar, niveau: doelQuiz.niveau, onderwerp: doelQuiz.onderwerp };
+
+  const nieuwRef = push(ref(db, `quizzes/${doelQuizId}/vragen`));
+  await set(nieuwRef, kopie);
+  await set(ref(db, `vragenbank/${nieuwRef.key}`), kopie);
+
+  sluitModal('modal-kopieer');
+  kopieerBron = null;
+  // Als de doelquiz nu open staat, direct verversen zodat de kopie zichtbaar is.
+  if (doelQuizId === actieveQuizId) toonQuizDetail(doelQuizId);
 };
 
 window.vraagVerwijderen = async function(quizId, vraagId) {

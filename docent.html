@@ -219,6 +219,10 @@ input.form-inp:focus, textarea.form-inp:focus, select.form-inp:focus { border-co
     <div class="sidebar-footer">
       <button class="btn btn-blauw btn-full" onclick="openNieuweQuizModal()">+ Nieuwe quiz</button>
       <div style="display:flex;gap:6px;">
+        <button class="btn btn-grijs" style="flex:1" onclick="exporteerAlleQuizzes()" title="Exporteer alle quizzes als één CSV-bestand">📤 Alles</button>
+        <button class="btn btn-grijs" style="flex:1" onclick="exporteerSelectie()" title="Exporteer alleen de aangevinkte quizzes">📤 Selectie (<span id="selectie-teller">0</span>)</button>
+      </div>
+      <div style="display:flex;gap:6px;">
         <button class="btn btn-grijs" style="flex:1" onclick="document.getElementById('csv-import').click()">📂 Importeer CSV</button>
         <button class="btn btn-grijs" onclick="downloadVoorbeeldCSV()" title="Download voorbeeldbestand">📋</button>
       </div>
@@ -375,7 +379,26 @@ function startListeners() {
 }
 
 // ── Quiz lijst ──
+// Set met quiz-id's die zijn aangevinkt voor "Selectie exporteren". Blijft
+// bewaard tussen her-renders (bijv. door de Firebase-listener), en wordt
+// opgeschoond zodra een quiz niet meer bestaat (verwijderd).
+const geselecteerdeQuizIds = new Set();
+
+function bijwerkenSelectieTeller() {
+  const el = document.getElementById('selectie-teller');
+  if (el) el.textContent = geselecteerdeQuizIds.size;
+}
+
+window.toggleQuizSelectie = function(id, checked) {
+  if (checked) geselecteerdeQuizIds.add(id); else geselecteerdeQuizIds.delete(id);
+  bijwerkenSelectieTeller();
+};
+
 function renderQuizLijst() {
+  // Opschonen: verwijder selecties van quizzes die niet meer bestaan
+  [...geselecteerdeQuizIds].forEach(id => { if (!alleQuizzes[id]) geselecteerdeQuizIds.delete(id); });
+  bijwerkenSelectieTeller();
+
   const leerjaar  = document.getElementById('filter-leerjaar').value;
   const niveau    = document.getElementById('filter-niveau').value;
   const onderwerp = document.getElementById('filter-onderwerp').value.toLowerCase();
@@ -396,12 +419,19 @@ function renderQuizLijst() {
     const n   = q.vragen ? Object.keys(q.vragen).length : 0;
     const div = document.createElement('div');
     div.className = 'quiz-item' + (id === actieveQuizId ? ' actief' : '');
-    div.innerHTML = `<div class="quiz-naam">${q.naam}</div>
-      <div class="quiz-meta">
-        <span class="tag">Jaar ${q.leerjaar}</span>
-        <span class="tag g">${q.niveau}</span>
-        <span class="tag p">${q.onderwerp}</span>
-        <span style="color:#475569">${n} vragen</span>
+    div.innerHTML = `<div style="display:flex;align-items:flex-start;gap:8px;">
+        <input type="checkbox" style="margin-top:3px;accent-color:#38bdf8;flex-shrink:0;cursor:pointer;"
+               onclick="event.stopPropagation()" onchange="toggleQuizSelectie('${id}',this.checked)"
+               ${geselecteerdeQuizIds.has(id) ? 'checked' : ''}>
+        <div style="flex:1;min-width:0;">
+          <div class="quiz-naam">${q.naam}</div>
+          <div class="quiz-meta">
+            <span class="tag">Jaar ${q.leerjaar}</span>
+            <span class="tag g">${q.niveau}</span>
+            <span class="tag p">${q.onderwerp}</span>
+            <span style="color:#475569">${n} vragen</span>
+          </div>
+        </div>
       </div>`;
     div.onclick = () => { actieveQuizId = id; renderQuizLijst(); toonQuizDetail(id); };
     el.appendChild(div);
@@ -1122,6 +1152,57 @@ window.exporteerQuizResultaten = async function(sessieId) {
 // Eén CSV-bestand mag meerdere quizzes bevatten: herhaal simpelweg het blok
 // (metadata-header, metadata-rij, vragen-header, vragen...) voor elke volgende quiz.
 
+// ── Exporteren (alles / selectie) ──
+// Zet een CSV-veld tussen aanhalingstekens; het simpele parseCsv-toggle-mechanisme
+// hierboven begrijpt geen ge-escapete dubbele aanhalingstekens ("") binnen een veld,
+// dus vervangen we die door een gewone apostrof zodat export → import altijd klopt.
+function csvVeld(s) { return '"' + String(s ?? '').replace(/"/g, "'") + '"'; }
+
+function quizNaarCsvBlok(q) {
+  const regels = [
+    'naam,leerjaar,niveau,onderwerp',
+    `${csvVeld(q.naam)},${q.leerjaar},${q.niveau},${csvVeld(q.onderwerp)}`,
+    'type,vraag,optieA,optieB,optieC,optieD,optieE,optieF,juist,sleutelwoorden'
+  ];
+  const vragen = q.vragen ? Object.values(q.vragen) : [];
+  vragen.forEach(v => {
+    let opts = ['', '', '', '', '', ''], juist = '', sleutel = '';
+    if (v.type === 'mc' || v.type === 'mc-multi') {
+      opts = [0, 1, 2, 3, 4, 5].map(i => (v.opties || [])[i] ?? '');
+      juist = Array.isArray(v.juist) ? v.juist.join(',') : (v.juist || '');
+    } else if (v.type === 'matching') {
+      opts[0] = (v.paren || []).map(p => `${p.l}:${p.r}`).join('|');
+    } else if (v.type === 'sorteren') {
+      opts[0] = (v.items || []).join('|');
+    } else {
+      sleutel = v.sleutelwoorden || '';
+    }
+    regels.push([v.type, csvVeld(v.tekst), ...opts.map(csvVeld), csvVeld(juist), csvVeld(sleutel)].join(','));
+  });
+  return regels.join('\n');
+}
+
+function downloadCsvBestand(inhoud, bestandsnaam) {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([inhoud], { type: 'text/csv;charset=utf-8;' }));
+  link.download = bestandsnaam;
+  link.click();
+}
+
+window.exporteerAlleQuizzes = function() {
+  const ids = Object.keys(alleQuizzes);
+  if (!ids.length) { alert('Nog geen quizzes om te exporteren.'); return; }
+  const inhoud = ids.map(id => quizNaarCsvBlok(alleQuizzes[id])).join('\n');
+  downloadCsvBestand(inhoud, `brain-chemistry-alle-quizzes_${new Date().toISOString().slice(0, 10)}.csv`);
+};
+
+window.exporteerSelectie = function() {
+  const ids = [...geselecteerdeQuizIds];
+  if (!ids.length) { alert('Vink eerst één of meer quizzes aan met de vinkjes in de lijst.'); return; }
+  const inhoud = ids.map(id => quizNaarCsvBlok(alleQuizzes[id])).join('\n');
+  downloadCsvBestand(inhoud, `brain-chemistry-selectie_${new Date().toISOString().slice(0, 10)}.csv`);
+};
+
 window.downloadVoorbeeldCSV = function() {
   const inhoud = [
     'naam,leerjaar,niveau,onderwerp',
@@ -1192,7 +1273,7 @@ window.importeerCSV = async function(event) {
   }
   if (!blokken.length) { alert('Geen geldige quiz-blokken gevonden in de CSV.'); return; }
 
-  let totaalQuizzes = 0, totaalVragen = 0, namen = [];
+  let totaalQuizzes = 0, totaalVragen = 0, totaalOverschreven = 0, namen = [];
 
   for (const blok of blokken) {
     if (!blok.metaRegel) continue;
@@ -1202,8 +1283,20 @@ window.importeerCSV = async function(event) {
     const niveau    = quizInfo[2] || 'HAVO';
     const onderwerp = quizInfo[3] || '';
 
-    const newRef = push(ref(db, 'quizzes'));
-    const quizId = newRef.key;
+    // Bestaat er al een quiz met exact deze naam? Dan overschrijven i.p.v.
+    // een duplicaat aanmaken — zo kun je een geëxporteerd/bewerkt CSV-bestand
+    // gewoon opnieuw importeren om bij te werken.
+    const bestaandeEntry = Object.entries(alleQuizzes).find(([, q]) => q.naam === quizNaam);
+    const overschreven   = !!bestaandeEntry;
+    let quizId;
+    if (overschreven) {
+      quizId = bestaandeEntry[0];
+      const oudeVragen = bestaandeEntry[1].vragen;
+      if (oudeVragen) for (const vid of Object.keys(oudeVragen)) await remove(ref(db, `vragenbank/${vid}`));
+      totaalOverschreven++;
+    } else {
+      quizId = push(ref(db, 'quizzes')).key;
+    }
     const vragen = {};
 
     for (const regel of blok.vraagRegels) {
@@ -1236,18 +1329,19 @@ window.importeerCSV = async function(event) {
       await set(ref(db, `vragenbank/${vid}`), vraag);
     }
 
-    await set(newRef, { naam: quizNaam, leerjaar, niveau, onderwerp, vragen });
+    await set(ref(db, `quizzes/${quizId}`), { naam: quizNaam, leerjaar, niveau, onderwerp, vragen });
     actieveQuizId = quizId;
     totaalQuizzes++;
     totaalVragen += Object.keys(vragen).length;
-    namen.push(quizNaam);
+    namen.push(quizNaam + (overschreven ? ' (overschreven)' : ' (nieuw)'));
   }
 
   event.target.value = '';
+  const overschrMelding = totaalOverschreven ? ` waarvan ${totaalOverschreven} overschreven` : '';
   if (totaalQuizzes === 1) {
     alert(`✅ Quiz "${namen[0]}" geïmporteerd met ${totaalVragen} vragen!`);
   } else {
-    alert(`✅ ${totaalQuizzes} quizzes geïmporteerd (${totaalVragen} vragen in totaal):\n${namen.join('\n')}`);
+    alert(`✅ ${totaalQuizzes} quizzes geïmporteerd${overschrMelding} (${totaalVragen} vragen in totaal):\n${namen.join('\n')}`);
   }
 };
 

@@ -229,7 +229,10 @@ function luisterNaarSessie() {
     const fase = s.fase || 'vraag';
     const v    = s.vraag;
 
-    if (fase === 'resultaten' && heeftGeantwoord) {
+    if (fase === 'resultaten') {
+      // Ook als je zelf niets had ingestuurd: nu kan de docent/het scorebord
+      // een niet-beantwoorde vraag alsnog als fout laten meetellen, dus ook
+      // dan willen we hier op het (inmiddels bestaande) resultaat wachten.
       // Luister eenmalig naar eigen nakijkresultaat (niet opnieuw registreren
       // bij elke sessie-update, anders stapelen listeners zich op)
       if (!nakijkListenerActief) {
@@ -297,7 +300,12 @@ function toonVraag(v) {
       `</div><button class="grote-knop" style="margin-top:12px" onclick="stuurMulti()">Verstuur antwoord</button>`;
 
   } else if (v.type === 'matching') {
-    const rechts = (v.paren || []).map(p => p.r).sort(() => Math.random() - 0.5);
+    // Poolopties: primaire definitie + eventuele "ook goed als"-alternatieven,
+    // zodat elk ingevuld alternatief ook echt kiesbaar is — niet alleen
+    // goedgekeurd als het toevallig al via een ander koppel in de lijst staat.
+    // Gededupliceerd, want anders staat eenzelfde label soms dubbel in de lijst.
+    const rechtsRuw = (v.paren || []).flatMap(p => [p.r, ...(p.ralt || [])]);
+    const rechts = [...new Set(rechtsRuw)].sort(() => Math.random() - 0.5);
     invoerEl.innerHTML = `<div class="matching-lijst">` +
       (v.paren || []).map((p, i) => `
         <div class="matching-rij">

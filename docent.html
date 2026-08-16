@@ -363,7 +363,31 @@ window.nvState = nvState;
 let nvFormQuizId = null;
 
 // ── Firebase listeners (pas gestart na bevestigd docent-login) ──
-function startListeners() {
+async function startListeners() {
+  // Eenmalig de huidige stand ophalen vóórdat de live listeners overnemen.
+  // Dit herstelt een lopende quizsessie na het (her)openen of verversen van
+  // deze docentpagina — anders denkt dit tabblad dat er niets loopt, terwijl
+  // leerlingen en het scorebord (die rechtstreeks naar Firebase kijken)
+  // gewoon de nog actieve sessie zien.
+  const [quizzesSnap, sessieSnap] = await Promise.all([
+    get(ref(db, 'quizzes')),
+    get(ref(db, 'sessie'))
+  ]);
+  alleQuizzes = quizzesSnap.exists() ? quizzesSnap.val() : {};
+
+  const lopendeSessie = sessieSnap.exists() ? sessieSnap.val() : null;
+  if (lopendeSessie && lopendeSessie.actief && alleQuizzes[lopendeSessie.quizId]) {
+    console.log('[herstel] lopende sessie gevonden, scherm wordt hersteld:', lopendeSessie);
+    actieveQuizId   = lopendeSessie.quizId;
+    sessieActief    = true;
+    sessieVraagIdx  = lopendeSessie.vraagIdx || 0;
+    huidigeFase     = lopendeSessie.fase || 'vraag';
+    huidigeSessieId = lopendeSessie.sessieId || null;
+    toonSessieScherm(actieveQuizId, sessieVraagIdx);
+  } else {
+    renderQuizLijst();
+  }
+
   onValue(ref(db, 'quizzes'), snap => {
     alleQuizzes = snap.exists() ? snap.val() : {};
     renderQuizLijst();
@@ -524,7 +548,7 @@ function renderVraagRij(quizId, vraagId, v, i) {
       v.sleutelwoorden.split(';').map(k => `<span class="sleutel-chip">🔑 ${k.trim()}</span>`).join('') + '</div>';
   } else if (v.type === 'matching' && v.paren) {
     extra = '<div style="margin-top:5px;font-size:.78em;color:#64748b;">' +
-      v.paren.map(p => `${p.l} → ${p.r}`).join(' &nbsp;|&nbsp; ') + '</div>';
+      v.paren.map(p => `${p.l} → ${p.r}${p.ralt && p.ralt.length ? ` <span style="color:#475569">(of: ${p.ralt.join(', ')})</span>` : ''}`).join(' &nbsp;|&nbsp; ') + '</div>';
   } else if (v.type === 'sorteren' && v.items) {
     extra = '<div style="margin-top:5px;font-size:.78em;color:#64748b;">' +
       v.items.map((it, idx) => `${idx+1}. ${it}`).join(' &nbsp;·&nbsp; ') + '</div>';
@@ -610,12 +634,13 @@ function renderNvVeld() {
     el.innerHTML = html;
 
   } else if (type === 'matching') {
-    let html = `<label class="form-label">Koppels (links → rechts)</label>`;
+    let html = `<label class="form-label">Koppels (links → rechts) <span style="color:#475569">— "Ook goed als" is optioneel, met / gescheiden bij meerdere</span></label>`;
     nvState.paren.forEach((p, i) => {
       html += `<div class="match-rij">
         <input class="form-inp" value="${p.l.replace(/"/g,'&quot;')}" oninput="window.nvState.paren[${i}].l=this.value" placeholder="Term…">
         <span class="match-pijl">→</span>
         <input class="form-inp" value="${p.r.replace(/"/g,'&quot;')}" oninput="window.nvState.paren[${i}].r=this.value" placeholder="Definitie…">
+        <input class="form-inp" style="max-width:160px" value="${(p.ralt||[]).join('/').replace(/"/g,'&quot;')}" oninput="window.nvState.paren[${i}].ralt=this.value.split('/').map(s=>s.trim()).filter(s=>s)" placeholder="Ook goed als… (optioneel)">
         ${nvState.paren.length > 2 ? `<button class="btn btn-rood" style="padding:3px 7px;font-size:.78em;" onclick="nvVerwijderPaar(${i})">✕</button>` : ''}
       </div>`;
     });
@@ -671,7 +696,7 @@ window.vraagBewerkStart = function(quizId, vraagId) {
   nvState.tekst   = v.tekst || '';
   nvState.opties  = v.opties ? [...v.opties] : ['','',''];
   nvState.correct = v.juist  ? (Array.isArray(v.juist) ? [...v.juist] : [v.juist]) : [];
-  nvState.paren   = v.paren  ? v.paren.map(p => ({l:p.l, r:p.r})) : [{l:'',r:''},{l:'',r:''}];
+  nvState.paren   = v.paren  ? v.paren.map(p => ({l:p.l, r:p.r, ralt: p.ralt ? [...p.ralt] : []})) : [{l:'',r:''},{l:'',r:''}];
   nvState.items   = v.items  ? [...v.items] : ['','',''];
 
   // Pas type-select aan
@@ -734,7 +759,8 @@ window.vraagToevoegen = async function(quizId) {
       vraag.juist = geldig;
     }
   } else if (type === 'matching') {
-    const paren = nvState.paren.filter(p => p.l.trim() && p.r.trim());
+    const paren = nvState.paren.filter(p => p.l.trim() && p.r.trim())
+      .map(p => p.ralt && p.ralt.length ? { l: p.l, r: p.r, ralt: p.ralt } : { l: p.l, r: p.r });
     if (paren.length < 2) { alert('Voer minimaal 2 koppels in.'); return; }
     vraag.paren = paren;
   } else if (type === 'sorteren') {
@@ -882,7 +908,8 @@ window.startQuiz = async function(quizId) {
     });
     await set(ref(db, 'sessie'), {
       actief: true, quizId, quizNaam: quiz.naam,
-      vraagIdx: 0, vraag: vragen[0], fase: 'vraag'
+      vraagIdx: 0, vraag: vragen[0], fase: 'vraag',
+      sessieId: huidigeSessieId
     });
     console.log('[startQuiz] sessie succesvol weggeschreven naar Firebase:', { vraagIdx: 0, fase: 'vraag' });
   } catch (err) {
@@ -905,7 +932,7 @@ function vraagDisplayHTML(v, toonJuist) {
       }).join('') + '</div>';
   } else if (v.type === 'matching') {
     return '<div class="match-display">' +
-      (v.paren || []).map(p => `<div class="match-pair"><span class="term">${p.l}</span><span style="color:#475569">→</span><span class="def">${p.r}</span></div>`).join('') +
+      (v.paren || []).map(p => `<div class="match-pair"><span class="term">${p.l}</span><span style="color:#475569">→</span><span class="def">${p.r}${p.ralt && p.ralt.length ? ` <span style="color:#475569;font-weight:400;">(of: ${p.ralt.join(', ')})</span>` : ''}</span></div>`).join('') +
       '</div>';
   } else if (v.type === 'sorteren') {
     return '<div class="sort-display">' +
@@ -992,9 +1019,10 @@ window.toonResultaten = async function(quizId, idx) {
       } else if (type === 'matching') {
         try {
           const studentMap = JSON.parse(a.antwoord || '{}');
-          const juistMap   = {};
-          (vraag.paren || []).forEach(p => { juistMap[p.l] = p.r; });
-          correct = Object.entries(juistMap).every(([k, v]) => studentMap[k] === v);
+          correct = (vraag.paren || []).every(p => {
+            const antw = studentMap[p.l];
+            return antw === p.r || (p.ralt && p.ralt.includes(antw));
+          });
         } catch { correct = false; }
       } else if (type === 'sorteren') {
         try {
@@ -1205,6 +1233,8 @@ window.exporteerQuizResultaten = async function(sessieId) {
 // mc       : opties in A-F kolommen, juist = één letter
 // mc-multi : opties in A-F kolommen, juist = kommagescheiden letters  bijv. "A,C"
 // matching : optieA = koppelparen  bijv. "H2O:water|NaCl:zout"
+//            extra goedgekeurde antwoorden na de 1e definitie: met "/" gescheiden,
+//            bijv. "geleidbaarheid:kwantitatief/kwalitatief" keurt beide goed
 // sorteren : optieA = items in volgorde bijv. "stap1|stap2|stap3"
 // open     : sleutelwoorden in laatste kolom
 //
@@ -1230,7 +1260,7 @@ function quizNaarCsvBlok(q) {
       opts = [0, 1, 2, 3, 4, 5].map(i => (v.opties || [])[i] ?? '');
       juist = Array.isArray(v.juist) ? v.juist.join(',') : (v.juist || '');
     } else if (v.type === 'matching') {
-      opts[0] = (v.paren || []).map(p => `${p.l}:${p.r}`).join('|');
+      opts[0] = (v.paren || []).map(p => `${p.l}:${[p.r, ...(p.ralt||[])].join('/')}`).join('|');
     } else if (v.type === 'sorteren') {
       opts[0] = (v.items || []).join('|');
     } else {
@@ -1371,10 +1401,15 @@ window.importeerCSV = async function(event) {
         vraag.opties = [a, b, c, d, e, f].filter(o => o);
         vraag.juist  = juist ? juist.split(',').map(s => s.trim()) : [];
       } else if (type === 'matching') {
-        // a = "term1:def1|term2:def2|..."
+        // a = "term1:def1|term2:def2|..." — extra goedgekeurde antwoorden na de
+        // eerste definitie mogen met "/" gescheiden worden toegevoegd, bijv.
+        // "geleidbaarheid:kwantitatief/kwalitatief" keurt beide goed.
         vraag.paren = (a || '').split('|').map(p => {
-          const [l, r] = p.split(':');
-          return { l: (l||'').trim(), r: (r||'').trim() };
+          const [l, rDeel] = p.split(':');
+          const [r, ...alt] = (rDeel || '').split('/').map(s => s.trim());
+          const paar = { l: (l||'').trim(), r: r || '' };
+          if (alt.filter(x => x).length) paar.ralt = alt.filter(x => x);
+          return paar;
         }).filter(p => p.l && p.r);
       } else if (type === 'sorteren') {
         // a = "item1|item2|item3"

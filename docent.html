@@ -1001,12 +1001,29 @@ window.toonResultaten = async function(quizId, idx) {
     const vragen = quiz.vragen ? Object.values(quiz.vragen) : [];
     const vraag  = vragen[idx];
 
-    const snap = await get(ref(db, 'antwoorden'));
-    const antwoorden = snap.exists() ? snap.val() : {};
+    const [antwSnap, deelnSnap] = await Promise.all([
+      get(ref(db, 'antwoorden')),
+      get(ref(db, 'deelnemers'))
+    ]);
+    let antwoorden = antwSnap.exists() ? antwSnap.val() : {};
+    const deelnemers = deelnSnap.exists() ? deelnSnap.val() : {};
     console.log('[toonResultaten] aantal antwoorden gevonden:', Object.keys(antwoorden).length);
+
+    // Leerlingen die online staan maar voor déze vraag niets hebben
+    // ingestuurd, tellen nu mee als fout (0 punten) — anders drukt niet
+    // meedoen de score/het gemiddelde niet.
+    const ontbrekend = Object.entries(deelnemers).filter(([id]) => !antwoorden[id]);
+    for (const [id, d] of ontbrekend) {
+      await set(ref(db, `antwoorden/${id}`), { naam: d.naam || 'Anoniem', antwoord: null, geenAntwoord: true });
+    }
+    if (ontbrekend.length) {
+      const opnieuw = await get(ref(db, 'antwoorden'));
+      antwoorden = opnieuw.exists() ? opnieuw.val() : {};
+    }
 
     for (const [leerlingId, a] of Object.entries(antwoorden)) {
       let correct = false;
+      if (!a.geenAntwoord) {
       const type = vraag.type;
       if (type === 'mc') {
         correct = a.antwoord === vraag.juist;
@@ -1033,6 +1050,7 @@ window.toonResultaten = async function(quizId, idx) {
         const antw = (a.antwoord || '').toLowerCase();
         correct = kws.length > 0 && kws.some(k => antw.includes(k));
       }
+      }
 
       await update(ref(db, `antwoorden/${leerlingId}`), { correct });
       const scoreSnap = await get(ref(db, `scores/${leerlingId}`));
@@ -1044,7 +1062,7 @@ window.toonResultaten = async function(quizId, idx) {
       await set(ref(db, `resultaten/${huidigeSessieId}/vragen/${idx}`), { tekst: vraag.tekst, type: vraag.type });
       for (const [leerlingId, a] of Object.entries(antwoorden)) {
         await set(ref(db, `resultaten/${huidigeSessieId}/antwoorden/${leerlingId}/vraag_${idx}`), {
-          naam: a.naam, antwoord: a.antwoord, correct: antwoorden[leerlingId]?.correct ?? false
+          naam: a.naam, antwoord: a.geenAntwoord ? '(geen antwoord)' : a.antwoord, correct: antwoorden[leerlingId]?.correct ?? false
         });
       }
     }
@@ -1165,8 +1183,8 @@ function toonSessieStats(data, vraag) {
     antwoorden.forEach(a => {
       const cls   = nagekeken ? (a.correct ? 'goed' : 'fout') : '';
       const icoon = nagekeken ? (a.correct ? '✅' : '❌') : '💬';
-      let antwtekst = a.antwoord;
-      try { const p = JSON.parse(a.antwoord); antwtekst = Array.isArray(p) ? p.join(' → ') : JSON.stringify(p); } catch {}
+      let antwtekst = a.geenAntwoord ? '(geen antwoord)' : a.antwoord;
+      if (!a.geenAntwoord) try { const p = JSON.parse(a.antwoord); antwtekst = Array.isArray(p) ? p.join(' → ') : (p && typeof p === 'object' ? Object.entries(p).map(([k,vv])=>`${k} → ${vv}`).join(', ') : antwtekst); } catch {}
       html += `<div class="open-antw-item ${cls}"><span style="flex-shrink:0">${icoon}</span>
         <div><div class="open-antw-naam">${a.naam||'Anoniem'}</div>${antwtekst}</div>
       </div>`;
